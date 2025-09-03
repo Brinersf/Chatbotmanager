@@ -1,16 +1,42 @@
-// Dados compartilhados do sistema
+// ====================================
+// SISTEMA DE DADOS COMPARTILHADOS
+// Clínica Bella Estética - Atendimento Online
+// ====================================
+
+/**
+ * DataManager - Gerenciador central de dados do sistema
+ * Contém todas as informações da clínica, procedimentos e funcionalidades
+ */
 const DataManager = {
-    // Dados da clínica
+    
+    // ====================================
+    // DADOS DA CLÍNICA
+    // ====================================
     clinicData: {
         name: "Clínica Bella Estética",
         phone: "(11) 99999-9999",
         email: "contato@bellaestética.com.br",
+        website: "www.bellaestética.com.br",
         address: "Rua das Flores, 123 - Centro",
         city: "São Paulo - SP",
-        hours: "Segunda a Sexta: 8h às 18h | Sábado: 8h às 14h"
+        cep: "01234-567",
+        hours: "Segunda a Sexta: 8h às 18h | Sábado: 8h às 14h",
+        socialMedia: {
+            instagram: "@bellaestética",
+            facebook: "Clínica Bella Estética",
+            whatsapp: "(11) 99999-9999"
+        },
+        specialties: [
+            "Estética Facial",
+            "Estética Corporal", 
+            "Harmonização Facial",
+            "Tratamentos Anti-idade"
+        ]
     },
 
-    // Procedimentos disponíveis
+    // ====================================
+    // PROCEDIMENTOS DISPONÍVEIS
+    // ====================================
     procedures: [
         {
             id: 1,
@@ -19,7 +45,15 @@ const DataManager = {
             price: "R$ 120,00",
             duration: "60 min",
             description: "Limpeza profunda com extração e hidratação",
-            icon: "fas fa-spa"
+            icon: "fas fa-spa",
+            benefits: [
+                "Remove impurezas profundas",
+                "Desobstrui os poros",
+                "Hidrata a pele",
+                "Previne acne"
+            ],
+            contraindications: ["Pele muito sensível", "Lesões ativas"],
+            aftercare: "Evitar sol por 24h, usar protetor solar"
         },
         {
             id: 2,
@@ -28,7 +62,15 @@ const DataManager = {
             price: "R$ 800,00",
             duration: "30 min",
             description: "Aplicação de toxina botulínica para rugas",
-            icon: "fas fa-syringe"
+            icon: "fas fa-syringe",
+            benefits: [
+                "Reduz rugas de expressão",
+                "Previne novas rugas",
+                "Resultado natural",
+                "Efeito duradouro"
+            ],
+            contraindications: ["Gravidez", "Amamentação", "Doenças neuromusculares"],
+            aftercare: "Não deitar por 4h, evitar exercícios por 24h"
         },
         {
             id: 3,
@@ -37,7 +79,15 @@ const DataManager = {
             price: "R$ 600,00",
             duration: "45 min",
             description: "Preenchimento com ácido hialurônico",
-            icon: "fas fa-kiss"
+            icon: "fas fa-kiss",
+            benefits: [
+                "Aumenta volume dos lábios",
+                "Define contorno",
+                "Hidrata os lábios",
+                "Resultado imediato"
+            ],
+            contraindications: ["Herpes ativo", "Alergia ao ácido hialurônico"],
+            aftercare: "Evitar beijos por 24h, não usar batom por 6h"
         },
         {
             id: 4,
@@ -46,7 +96,15 @@ const DataManager = {
             price: "R$ 150,00",
             duration: "90 min",
             description: "Massagem terapêutica para relaxamento",
-            icon: "fas fa-hands"
+            icon: "fas fa-hands",
+            benefits: [
+                "Reduz stress e tensão",
+                "Melhora circulação",
+                "Relaxa músculos",
+                "Promove bem-estar"
+            ],
+            contraindications: ["Febre", "Inflamações agudas"],
+            aftercare: "Beber bastante água, descansar"
         },
         {
             id: 5,
@@ -55,422 +113,481 @@ const DataManager = {
             price: "R$ 180,00",
             duration: "60 min",
             description: "Técnica para redução de inchaço",
-            icon: "fas fa-water"
+            icon: "fas fa-water",
+            benefits: [
+                "Reduz inchaço",
+                "Melhora circulação",
+                "Elimina toxinas",
+                "Modela silhueta"
+            ],
+            contraindications: ["Trombose", "Infecções", "Câncer"],
+            aftercare: "Beber 2L de água, evitar sal"
+        },
+        {
+            id: 6,
+            name: "Peeling Químico",
+            category: "Facial",
+            price: "R$ 250,00",
+            duration: "45 min",
+            description: "Renovação celular com ácidos",
+            icon: "fas fa-leaf",
+            benefits: [
+                "Renova a pele",
+                "Reduz manchas",
+                "Melhora textura",
+                "Estimula colágeno"
+            ],
+            contraindications: ["Pele bronzeada", "Lesões ativas"],
+            aftercare: "Usar protetor solar, evitar sol por 7 dias"
+        },
+        {
+            id: 7,
+            name: "Microagulhamento",
+            category: "Facial",
+            price: "R$ 300,00",
+            duration: "60 min",
+            description: "Estímulo de colágeno natural",
+            icon: "fas fa-magic",
+            benefits: [
+                "Estimula colágeno",
+                "Reduz cicatrizes",
+                "Melhora textura",
+                "Rejuvenesce a pele"
+            ],
+            contraindications: ["Acne ativa", "Quelóides"],
+            aftercare: "Não usar maquiagem por 12h, protetor solar"
+        },
+        {
+            id: 8,
+            name: "Hidrafacial",
+            category: "Facial",
+            price: "R$ 200,00",
+            duration: "50 min",
+            description: "Limpeza, esfoliação e hidratação",
+            icon: "fas fa-tint",
+            benefits: [
+                "Limpeza profunda",
+                "Hidratação intensa",
+                "Pele luminosa",
+                "Sem tempo de recuperação"
+            ],
+            contraindications: ["Pele muito sensível"],
+            aftercare: "Usar hidratante, protetor solar"
+        },
+        {
+            id: 9,
+            name: "Criolipólise",
+            category: "Corporal",
+            price: "R$ 400,00",
+            duration: "60 min",
+            description: "Redução de gordura localizada",
+            icon: "fas fa-snowflake",
+            benefits: [
+                "Reduz gordura localizada",
+                "Não invasivo",
+                "Sem cirurgia",
+                "Resultados duradouros"
+            ],
+            contraindications: ["Gravidez", "Hérnias", "Crioglobulinemia"],
+            aftercare: "Massagem local, beber água, exercícios"
+        },
+        {
+            id: 10,
+            name: "Radiofrequência",
+            category: "Corporal",
+            price: "R$ 220,00",
+            duration: "45 min",
+            description: "Firmeza e tonificação da pele",
+            icon: "fas fa-bolt",
+            benefits: [
+                "Firma a pele",
+                "Reduz flacidez",
+                "Estimula colágeno",
+                "Melhora textura"
+            ],
+            contraindications: ["Marcapasso", "Gravidez", "Implantes metálicos"],
+            aftercare: "Hidratação, protetor solar"
         }
     ],
 
-    // Agendamentos (simulado)
+    // ====================================
+    // AGENDAMENTOS (SIMULADO)
+    // ====================================
     appointments: [],
 
-    // Métodos
+    // ====================================
+    // HORÁRIOS DISPONÍVEIS
+    // ====================================
+    availableHours: [
+        "08:00", "09:00", "10:00", "11:00", 
+        "14:00", "15:00", "16:00", "17:00"
+    ],
+
+    // ====================================
+    // MÉTODOS DE BUSCA E FILTRO
+    // ====================================
+    
+    /**
+     * Busca procedimento por ID
+     * @param {number} id - ID do procedimento
+     * @returns {Object|null} Procedimento encontrado ou null
+     */
     getProcedureById: function(id) {
-        return this.procedures.find(proc => proc.id === id);
+        return this.procedures.find(proc => proc.id === parseInt(id)) || null;
     },
 
+    /**
+     * Busca procedimentos por categoria
+     * @param {string} category - Categoria do procedimento
+     * @returns {Array} Lista de procedimentos da categoria
+     */
+    getProceduresByCategory: function(category) {
+        return this.procedures.filter(proc => 
+            proc.category.toLowerCase() === category.toLowerCase()
+        );
+    },
+
+    /**
+     * Busca procedimentos por texto
+     * @param {string} query - Texto de busca
+     * @returns {Array} Lista de procedimentos encontrados
+     */
+    searchProcedures: function(query) {
+        if (!query || query.trim() === '') return this.procedures;
+        
+        const lowerQuery = query.toLowerCase().trim();
+        return this.procedures.filter(proc => 
+            proc.name.toLowerCase().includes(lowerQuery) ||
+            proc.description.toLowerCase().includes(lowerQuery) ||
+            proc.category.toLowerCase().includes(lowerQuery) ||
+            proc.benefits.some(benefit => benefit.toLowerCase().includes(lowerQuery))
+        );
+    },
+
+    /**
+     * Obtém todas as categorias disponíveis
+     * @returns {Array} Lista de categorias únicas
+     */
+    getCategories: function() {
+        return [...new Set(this.procedures.map(p => p.category))];
+    },
+
+    // ====================================
+    // MÉTODOS DE AGENDAMENTO
+    // ====================================
+    
+    /**
+     * Adiciona novo agendamento
+     * @param {Object} appointment - Dados do agendamento
+     * @returns {Object} Agendamento criado com ID
+     */
     addAppointment: function(appointment) {
-        appointment.id = Date.now();
-        this.appointments.push(appointment);
-        return appointment;
+        const newAppointment = {
+            ...appointment,
+            id: Date.now() + Math.random(), // ID único
+            status: 'agendado',
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+        
+        this.appointments.push(newAppointment);
+        this.saveToStorage();
+        return newAppointment;
+    },
+
+    /**
+     * Busca agendamentos por data
+     * @param {string} date - Data no formato YYYY-MM-DD
+     * @returns {Array} Lista de agendamentos da data
+     */
+    getAppointmentsByDate: function(date) {
+        return this.appointments.filter(apt => apt.date === date);
+    },
+
+    /**
+     * Verifica se horário está disponível
+     * @param {string} date - Data no formato YYYY-MM-DD
+     * @param {string} time - Horário no formato HH:MM
+     * @returns {boolean} True se disponível
+     */
+    isTimeAvailable: function(date, time) {
+        const existingAppointments = this.getAppointmentsByDate(date);
+        return !existingAppointments.some(apt => apt.time === time);
+    },
+
+    /**
+     * Obtém horários disponíveis para uma data
+     * @param {string} date - Data no formato YYYY-MM-DD
+     * @returns {Array} Lista de horários disponíveis
+     */
+    getAvailableTimesForDate: function(date) {
+        const bookedTimes = this.getAppointmentsByDate(date).map(apt => apt.time);
+        return this.availableHours.filter(time => !bookedTimes.includes(time));
+    },
+
+    // ====================================
+    // MÉTODOS DE VALIDAÇÃO
+    // ====================================
+    
+    /**
+     * Valida número de telefone brasileiro
+     * @param {string} phone - Número de telefone
+     * @returns {boolean} True se válido
+     */
+    validatePhone: function(phone) {
+        const phoneRegex = /^\(\d{2}\)\s\d{4,5}-\d{4}$/;
+        return phoneRegex.test(phone);
+    },
+
+    /**
+     * Valida endereço de email
+     * @param {string} email - Endereço de email
+     * @returns {boolean} True se válido
+     */
+    validateEmail: function(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    },
+
+    /**
+     * Valida data (não pode ser no passado)
+     * @param {string} date - Data no formato YYYY-MM-DD
+     * @returns {boolean} True se válida
+     */
+    validateDate: function(date) {
+        const selectedDate = new Date(date);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return selectedDate >= today;
+    },
+
+    /**
+     * Valida se é dia útil (segunda a sábado)
+     * @param {string} date - Data no formato YYYY-MM-DD
+     * @returns {boolean} True se é dia útil
+     */
+    isWorkingDay: function(date) {
+        const dayOfWeek = new Date(date).getDay();
+        return dayOfWeek >= 1 && dayOfWeek <= 6; // Segunda(1) a Sábado(6)
+    },
+
+    // ====================================
+    // MÉTODOS DE FORMATAÇÃO
+    // ====================================
+    
+    /**
+     * Formata preço removendo R$
+     * @param {string} price - Preço com R$
+     * @returns {string} Preço sem R$
+     */
+    formatPrice: function(price) {
+        return price.replace('R$', '').trim();
+    },
+
+    /**
+     * Formata data para exibição
+     * @param {string} date - Data no formato YYYY-MM-DD
+     * @returns {string} Data formatada em português
+     */
+    formatDate: function(date) {
+        return new Date(date + 'T00:00:00').toLocaleDateString('pt-BR', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    },
+
+    /**
+     * Formata horário para exibição
+     * @param {string} time - Horário no formato HH:MM
+     * @returns {string} Horário formatado
+     */
+    formatTime: function(time) {
+        return time + 'h';
+    },
+
+    /**
+     * Formata telefone automaticamente
+     * @param {string} phone - Número sem formatação
+     * @returns {string} Telefone formatado
+     */
+    formatPhoneNumber: function(phone) {
+        const numbers = phone.replace(/\D/g, '');
+        if (numbers.length <= 10) {
+            return numbers.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+        } else {
+            return numbers.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+        }
+    },
+
+    // ====================================
+    // ESTATÍSTICAS E RELATÓRIOS
+    // ====================================
+    
+    /**
+     * Obtém estatísticas gerais do sistema
+     * @returns {Object} Objeto com estatísticas
+     */
+    getStats: function() {
+        const categories = this.getCategories();
+        const totalAppointments = this.appointments.length;
+        const todayAppointments = this.getAppointmentsByDate(
+            new Date().toISOString().split('T')[0]
+        ).length;
+
+        return {
+            totalProcedures: this.procedures.length,
+            totalCategories: categories.length,
+            totalAppointments: totalAppointments,
+            todayAppointments: todayAppointments,
+            categories: categories,
+            mostPopularCategory: this.getMostPopularCategory(),
+            averagePrice: this.getAveragePrice()
+        };
+    },
+
+    /**
+     * Obtém categoria mais popular
+     * @returns {string} Nome da categoria mais popular
+     */
+    getMostPopularCategory: function() {
+        const categoryCount = {};
+        this.procedures.forEach(proc => {
+            categoryCount[proc.category] = (categoryCount[proc.category] || 0) + 1;
+        });
+        
+        return Object.keys(categoryCount).reduce((a, b) => 
+            categoryCount[a] > categoryCount[b] ? a : b
+        );
+    },
+
+    /**
+     * Calcula preço médio dos procedimentos
+     * @returns {string} Preço médio formatado
+     */
+    getAveragePrice: function() {
+        const prices = this.procedures.map(proc => 
+            parseFloat(proc.price.replace('R$', '').replace(',', '.'))
+        );
+        const average = prices.reduce((a, b) => a + b, 0) / prices.length;
+        return `R$ ${average.toFixed(2).replace('.', ',')}`;
+    },
+
+    // ====================================
+    // CONFIGURAÇÕES DO SISTEMA
+    // ====================================
+    systemConfig: {
+        maxAppointmentsPerDay: 8,
+        workingDays: [1, 2, 3, 4, 5, 6], // Segunda a Sábado
+        holidayDates: [], // Feriados (formato YYYY-MM-DD)
+        maintenanceDates: [], // Datas de manutenção
+        autoConfirmation: true,
+        reminderEnabled: true,
+        whatsappIntegration: true,
+        emailNotifications: true,
+        smsNotifications: false,
+        bookingAdvanceDays: 30, // Quantos dias à frente pode agendar
+        cancellationHours: 24, // Horas mínimas para cancelamento
+        version: "1.0.0",
+        lastUpdate: "2024-01-15"
+    },
+
+    // ====================================
+    // MENSAGENS DO SISTEMA
+    // ====================================
+    messages: {
+        welcome: "Olá! 👋 Bem-vindo à Clínica Bella Estética!",
+        appointmentConfirmed: "Agendamento confirmado com sucesso! 🎉",
+        appointmentError: "Erro ao agendar. Tente novamente.",
+        invalidData: "Por favor, verifique os dados informados.",
+        systemError: "Erro no sistema. Contate o suporte.",
+        timeUnavailable: "Horário não disponível. Escolha outro.",
+        dateInvalid: "Data inválida. Selecione uma data futura.",
+        phoneInvalid: "Telefone inválido. Use o formato (00) 00000-0000",
+        emailInvalid: "Email inválido. Verifique o formato.",
+        fieldRequired: "Este campo é obrigatório.",
+        success: "Operação realizada com sucesso!",
+        loading: "Carregando...",
+        noResults: "Nenhum resultado encontrado.",
+        connectionError: "Erro de conexão. Tente novamente."
+    },
+
+    // ====================================
+    // MÉTODOS DE PERSISTÊNCIA
+    // ====================================
+    
+    /**
+     * Salva dados no localStorage
+     */
+    saveToStorage: function() {
+        try {
+            localStorage.setItem('bellaClinic_appointments', JSON.stringify(this.appointments));
+            localStorage.setItem('bellaClinic_lastUpdate', new Date().toISOString());
+        } catch (error) {
+            console.warn('Erro ao salvar no localStorage:', error);
+        }
+    },
+
+    /**
+     * Carrega dados do localStorage
+     */
+    loadFromStorage: function() {
+        try {
+            const savedAppointments = localStorage.getItem('bellaClinic_appointments');
+            if (savedAppointments) {
+                this.appointments = JSON.parse(savedAppointments);
+            }
+        } catch (error) {
+            console.warn('Erro ao carregar do localStorage:', error);
+            this.appointments = [];
+        }
+    },
+
+    /**
+     * Limpa dados salvos
+     */
+    clearStorage: function() {
+        try {
+            localStorage.removeItem('bellaClinic_appointments');
+            localStorage.removeItem('bellaClinic_lastUpdate');
+            this.appointments = [];
+        } catch (error) {
+            console.warn('Erro ao limpar localStorage:', error);
+        }
+    },
+
+    // ====================================
+    // MÉTODOS DE INICIALIZAÇÃO
+    // ====================================
+    
+    /**
+     * Inicializa o sistema de dados
+     */
+    init: function() {
+        this.loadFromStorage();
+        console.log('📊 DataManager inicializado com sucesso!');
+        console.log(`📋 ${this.procedures.length} procedimentos carregados`);
+        console.log(`🏥 Clínica: ${this.clinicData.name}`);
+        console.log(`📅 ${this.appointments.length} agendamentos carregados`);
     }
 };
 
-📄 
-js/client.js
+// ====================================
+// EXPORTAR PARA USO GLOBAL
+// ====================================
+window.DataManager = DataManager;
 
-// Sistema de chat e funcionalidades do cliente
-let selectedProcedure = null;
-
-// Inicializar chat
-function initializeChat() {
-    displayWelcomeMessage();
-    loadProceduresDropdown();
-    setupEventListeners();
-}
-
-function displayWelcomeMessage() {
-    const chatMessages = document.getElementById('chatMessages');
-    const welcomeMessage = createBotMessage(`
-        Olá! 👋 Bem-vindo à ${DataManager.clinicData.name}!
-        
-        Sou seu assistente virtual e estou aqui para ajudar você com:
-        • 📅 Agendamentos de procedimentos
-        • 💄 Informações sobre nossos serviços
-        • 📍 Localização e horários
-        • 📞 Contato direto
-        
-        Como posso te ajudar hoje?
-    `);
-    chatMessages.appendChild(welcomeMessage);
-}
-
-function createBotMessage(text) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'flex items-start space-x-3';
-    messageDiv.innerHTML = `
-        <div class="bg-purple-600 p-2 rounded-full">
-            <i class="fas fa-robot text-white text-sm"></i>
-        </div>
-        <div class="bg-white rounded-2xl rounded-tl-none p-4 max-w-md shadow-sm">
-            <p class="text-gray-800 whitespace-pre-line">${text}</p>
-            <span class="text-xs text-gray-500 mt-2 block">${new Date().toLocaleTimeString()}</span>
-        </div>
-    `;
-    return messageDiv;
-}
-
-function createUserMessage(text) {
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'flex items-start space-x-3 justify-end';
-    messageDiv.innerHTML = `
-        <div class="bg-blue-600 rounded-2xl rounded-tr-none p-4 max-w-md shadow-sm">
-            <p class="text-white">${text}</p>
-            <span class="text-xs text-blue-200 mt-2 block">${new Date().toLocaleTimeString()}</span>
-        </div>
-        <div class="bg-blue-600 p-2 rounded-full">
-            <i class="fas fa-user text-white text-sm"></i>
-        </div>
-    `;
-    return messageDiv;
-}
-
-function sendMessage() {
-    const input = document.getElementById('chatInput');
-    const message = input.value.trim();
-    
-    if (!message) return;
-    
-    // Adicionar mensagem do usuário
-    const chatMessages = document.getElementById('chatMessages');
-    chatMessages.appendChild(createUserMessage(message));
-    
-    // Limpar input
-    input.value = '';
-    
-    // Simular resposta do bot
-    setTimeout(() => {
-        const response = generateBotResponse(message);
-        chatMessages.appendChild(createBotMessage(response));
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 1000);
-    
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function sendQuickMessage(message) {
-    const chatMessages = document.getElementById('chatMessages');
-    chatMessages.appendChild(createUserMessage(message));
-    
-    setTimeout(() => {
-        const response = generateBotResponse(message);
-        chatMessages.appendChild(createBotMessage(response));
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }, 1000);
-    
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function generateBotResponse(message) {
-    const lowerMessage = message.toLowerCase();
-    
-    if (lowerMessage.includes('agendar') || lowerMessage.includes('agendamento')) {
-        return `Perfeito! Vou te ajudar a agendar um procedimento. 📅
-        
-Você pode:
-• Clicar no botão "Agendar" abaixo
-• Escolher um procedimento no menu "Ver procedimentos"
-• Me dizer qual procedimento te interessa
-
-Qual procedimento você gostaria de agendar?`;
-    }
-    
-    if (lowerMessage.includes('procedimento') || lowerMessage.includes('serviço')) {
-        return `Temos diversos procedimentos disponíveis! 💄✨
-
-🔸 **Faciais:**
-• Limpeza de Pele - R$ 120,00
-• Botox - R$ 800,00  
-• Preenchimento Labial - R$ 600,00
-
-🔸 **Corporais:**
-• Massagem Relaxante - R$ 150,00
-• Drenagem Linfática - R$ 180,00
-
-Clique em "Ver procedimentos" no menu para mais detalhes!`;
-    }
-    
-    if (lowerMessage.includes('localização') || lowerMessage.includes('endereço')) {
-        return `📍 **Nossa localização:**
-${DataManager.clinicData.address}
-${DataManager.clinicData.city}
-
-Estamos em uma localização de fácil acesso, com estacionamento disponível!`;
-    }
-    
-    if (lowerMessage.includes('horário') || lowerMessage.includes('funcionamento')) {
-        return `🕐 **Horários de funcionamento:**
-${DataManager.clinicData.hours}
-
-Trabalhamos com agendamento para garantir o melhor atendimento!`;
-    }
-    
-    if (lowerMessage.includes('contato') || lowerMessage.includes('telefone')) {
-        return `📞 **Entre em contato conosco:**
-
-• **Telefone:** ${DataManager.clinicData.phone}
-• **Email:** ${DataManager.clinicData.email}
-• **WhatsApp:** Disponível no mesmo número
-
-Respondemos rapidamente! 😊`;
-    }
-    
-    return `Entendi! 😊 Posso te ajudar com:
-
-• 📅 **Agendamentos** - Marcar seu procedimento
-• 💄 **Procedimentos** - Conhecer nossos serviços  
-• 📍 **Localização** - Como chegar até nós
-• 🕐 **Horários** - Quando funcionamos
-• 📞 **Contato** - Falar diretamente conosco
-
-O que você gostaria de saber?`;
-}
-
-// Event Listeners
-function setupEventListeners() {
-    document.getElementById('chatInput').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            sendMessage();
-        }
-    });
-}
-
-// Dropdown de procedimentos
-function loadProceduresDropdown() {
-    const proceduresList = document.getElementById('proceduresList');
-    
-    DataManager.procedures.forEach(procedure => {
-        const procedureDiv = document.createElement('div');
-        procedureDiv.className = 'p-4 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0';
-        procedureDiv.onclick = () => selectProcedure(procedure);
-        
-        procedureDiv.innerHTML = `
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <i class="${procedure.icon} text-purple-600 mr-3"></i>
-                    <div>
-                        <h4 class="font-semibold text-gray-800">${procedure.name}</h4>
-                        <p class="text-sm text-gray-600">${procedure.description}</p>
-                        <div class="flex items-center mt-1 text-xs text-gray-500">
-                            <i class="fas fa-clock mr-1"></i>${procedure.duration}
-                        </div>
-                    </div>
-                </div>
-                <div class="text-right">
-                    <div class="font-bold text-purple-600">${procedure.price}</div>
-                    <div class="text-xs text-gray-500">${procedure.category}</div>
-                </div>
-            </div>
-        `;
-        
-        proceduresList.appendChild(procedureDiv);
-    });
-}
-
-function toggleProceduresDropdown() {
-    const dropdown = document.getElementById('proceduresDropdown');
-    const icon = document.getElementById('dropdownIcon');
-    
-    if (dropdown.classList.contains('hidden')) {
-        dropdown.classList.remove('hidden');
-        icon.classList.remove('fa-chevron-down');
-        icon.classList.add('fa-chevron-up');
-    } else {
-        dropdown.classList.add('hidden');
-        icon.classList.remove('fa-chevron-up');
-        icon.classList.add('fa-chevron-down');
-    }
-}
-
-function selectProcedure(procedure) {
-    selectedProcedure = procedure;
-    toggleProceduresDropdown();
-    openSchedulingModal();
-}
-
-// Modais
-function openSchedulingModal() {
-    const modal = document.getElementById('schedulingModal');
-    const procedureInfo = document.getElementById('selectedProcedureInfo');
-    
-    if (selectedProcedure) {
-        procedureInfo.innerHTML = `
-            <div class="flex items-center">
-                <i class="${selectedProcedure.icon} text-purple-600 text-2xl mr-4"></i>
-                <div>
-                    <h4 class="font-bold text-lg">${selectedProcedure.name}</h4>
-                    <p class="text-gray-600">${selectedProcedure.description}</p>
-                    <div class="flex items-center mt-2 text-sm text-gray-500">
-                        <span class="mr-4"><i class="fas fa-clock mr-1"></i>${selectedProcedure.duration}</span>
-                        <span class="font-semibold text-purple-600">${selectedProcedure.price}</span>
-                    </div>
-                </div>
-            </div>
-        `;
-    } else {
-        procedureInfo.innerHTML = `
-            <div class="text-center text-gray-600">
-                <i class="fas fa-calendar-plus text-3xl mb-2"></i>
-                <p>Selecione um procedimento ou preencha os dados abaixo</p>
-            </div>
-        `;
-    }
-    
-    modal.classList.remove('hidden');
-    
-    // Definir data mínima como hoje
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('appointmentDate').min = today;
-}
-
-function closeSchedulingModal() {
-    document.getElementById('schedulingModal').classList.add('hidden');
-    clearSchedulingForm();
-}
-
-function clearSchedulingForm() {
-    document.getElementById('clientName').value = '';
-    document.getElementById('clientPhone').value = '';
-    document.getElementById('appointmentDate').value = '';
-    document.getElementById('appointmentTime').value = '';
-    document.getElementById('appointmentNotes').value = '';
-}
-
-function confirmScheduling() {
-    const name = document.getElementById('clientName').value;
-    const phone = document.getElementById('clientPhone').value;
-    const date = document.getElementById('appointmentDate').value;
-    const time = document.getElementById('appointmentTime').value;
-    const notes = document.getElementById('appointmentNotes').value;
-    
-    if (!name || !phone || !date || !time) {
-        alert('Por favor, preencha todos os campos obrigatórios!');
-        return;
-    }
-    
-    const appointment = {
-        procedure: selectedProcedure,
-        client: { name, phone },
-        date,
-        time,
-        notes,
-        createdAt: new Date()
-    };
-    
-    DataManager.addAppointment(appointment);
-    
-    closeSchedulingModal();
-    showSuccessModal(appointment);
-}
-
-function showSuccessModal(appointment) {
-    const modal = document.getElementById('successModal');
-    const message = document.getElementById('successMessage');
-    
-    const dateFormatted = new Date(appointment.date).toLocaleDateString('pt-BR');
-    const procedureName = appointment.procedure ? appointment.procedure.name : 'Consulta';
-    
-    message.innerHTML = `
-        <h3 class="text-xl font-bold text-green-600 mb-4">Agendamento Confirmado!</h3>
-        <div class="text-left space-y-2">
-            <p><strong>Procedimento:</strong> ${procedureName}</p>
-            <p><strong>Cliente:</strong> ${appointment.client.name}</p>
-            <p><strong>Data:</strong> ${dateFormatted}</p>
-            <p><strong>Horário:</strong> ${appointment.time}</p>
-            <p><strong>Telefone:</strong> ${appointment.client.phone}</p>
-        </div>
-        <div class="mt-4 p-3 bg-blue-50 rounded-xl text-sm text-blue-800">
-            <i class="fas fa-info-circle mr-2"></i>
-            Você receberá uma confirmação em breve!
-        </div>
-    `;
-    
-    modal.classList.remove('hidden');
-    
-    // Salvar dados para compartilhamento
-    window.lastAppointment = appointment;
-}
-
-function closeSuccessModal() {
-    document.getElementById('successModal').classList.add('hidden');
-    document.getElementById('sharingModal').classList.remove('hidden');
-}
-
-// Funções de compartilhamento
-function shareToClientWhatsApp() {
-    const appointment = window.lastAppointment;
-    if (!appointment) return;
-    
-    const procedureName = appointment.procedure ? appointment.procedure.name : 'Consulta';
-    const dateFormatted = new Date(appointment.date).toLocaleDateString('pt-BR');
-    
-    const message = `🎉 *Agendamento Confirmado!*
-
-📅 *Procedimento:* ${procedureName}
-👤 *Cliente:* ${appointment.client.name}
-📆 *Data:* ${dateFormatted}
-🕐 *Horário:* ${appointment.time}
-📱 *Telefone:* ${appointment.client.phone}
-
-📍 *Local:* ${DataManager.clinicData.address}
-
-✨ Obrigado por escolher a ${DataManager.clinicData.name}!`;
-    
-    const whatsappUrl = `https://wa.me/${appointment.client.phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-}
-
-function copyAppointmentData() {
-    const appointment = window.lastAppointment;
-    if (!appointment) return;
-    
-    const procedureName = appointment.procedure ? appointment.procedure.name : 'Consulta';
-    const dateFormatted = new Date(appointment.date).toLocaleDateString('pt-BR');
-    
-    const text = `Agendamento Confirmado!
-    
-Procedimento: ${procedureName}
-Cliente: ${appointment.client.name}
-Data: ${dateFormatted}
-Horário: ${appointment.time}
-Telefone: ${appointment.client.phone}
-Local: ${DataManager.clinicData.address}
-
-${DataManager.clinicData.name}`;
-    
-    navigator.clipboard.writeText(text).then(() => {
-        alert('✅ Dados copiados para a área de transferência!');
-    });
-}
-
-function downloadAppointmentPDF() {
-    alert('📄 Funcionalidade de PDF será implementada em breve!');
-}
-
-function shareToSocialMedia() {
-    alert('📱 Funcionalidade de redes sociais será implementada em breve!');
-}
-
-function closeSharingModal() {
-    document.getElementById('sharingModal').classList.add('hidden');
-    selectedProcedure = null;
-}
-
-// Inicializar quando a página carregar
+// ====================================
+// INICIALIZAÇÃO AUTOMÁTICA
+// ====================================
 document.addEventListener('DOMContentLoaded', function() {
-    // Aguardar o sistema ser desbloqueado
-    const checkUnlock = setInterval(() => {
-        if (!document.getElementById('mainContent').classList.contains('hidden')) {
-            initializeChat();
-            clearInterval(checkUnlock);
-        }
-    }, 100);
+    DataManager.init();
 });
+
+// ====================================
+// LOG DE CARREGAMENTO
+// ====================================
+console.log('🔧 shared-data.js carregado com sucesso!');
+console.log('📊 DataManager disponível globalmente');
+console.log('🏥 Sistema da Clínica Bella Estética v' + DataManager.systemConfig.version);
