@@ -3,882 +3,950 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Administrativo - Chatbot Clínica</title>
+    <title>Painel Administrativo - Clínica Bella Estética</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
     <style>
-        .tab-button.active {
-            color: #4f46e5 !important;
-            border-bottom-color: #4f46e5 !important;
+        .admin-card {
+            @apply bg-white rounded-xl shadow-lg p-6 border border-gray-200 hover:shadow-xl transition-all duration-300;
         }
-        
-        .tab-content {
-            animation: fadeIn 0.3s ease-in-out;
+        .admin-input {
+            @apply w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .admin-button {
+            @apply bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-300;
         }
-        
-        .procedure-card {
-            transition: all 0.3s ease;
+        .admin-button-secondary {
+            @apply bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition-all duration-300;
         }
-        
-        .procedure-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        .admin-button-danger {
+            @apply bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-all duration-300;
+        }
+        .admin-tab {
+            @apply px-4 py-2 rounded-lg cursor-pointer transition-all duration-300;
+        }
+        .admin-tab.active {
+            @apply bg-purple-600 text-white;
+        }
+        .admin-tab:not(.active) {
+            @apply bg-gray-200 text-gray-700 hover:bg-gray-300;
+        }
+        .stats-card {
+            @apply bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl p-6 shadow-lg;
         }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <!-- Header -->
-    <header class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg">
-        <div class="container mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                        <i class="fas fa-cogs text-xl"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-2xl font-bold">Painel Administrativo</h1>
-                        <p class="text-sm opacity-90">Gerencie seu chatbot da clínica</p>
-                    </div>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <a href="index.html" target="_blank" class="bg-white bg-opacity-20 px-4 py-2 rounded-lg hover:bg-opacity-30 transition-colors flex items-center space-x-2">
-                        <i class="fas fa-external-link-alt"></i>
-                        <span>Ver Chatbot</span>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <div class="container mx-auto px-6 py-8">
-        <!-- Navigation Tabs -->
-        <div class="bg-white rounded-lg shadow-md mb-8">
-            <div class="flex border-b">
-                <button onclick="showTab('clinic', this)" class="tab-button active px-6 py-4 font-medium text-indigo-600 border-b-2 border-indigo-600">
-                    <i class="fas fa-clinic-medical mr-2"></i>Dados da Clínica
-                </button>
-                <button onclick="showTab('procedures', this)" class="tab-button px-6 py-4 font-medium text-gray-500 hover:text-indigo-600 border-b-2 border-transparent">
-                    <i class="fas fa-list mr-2"></i>Procedimentos
-                </button>
-                <button onclick="showTab('appointments', this)" class="tab-button px-6 py-4 font-medium text-gray-500 hover:text-indigo-600 border-b-2 border-transparent">
-                    <i class="fas fa-calendar mr-2"></i>Agendamentos
-                </button>
-                <button onclick="showTab('messages', this)" class="tab-button px-6 py-4 font-medium text-gray-500 hover:text-indigo-600 border-b-2 border-transparent">
-                    <i class="fas fa-comments mr-2"></i>Mensagens
-                </button>
-            </div>
-        </div>
-
-        <!-- Clinic Data Tab -->
-        <div id="clinicTab" class="tab-content">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Informações da Clínica</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Clínica</label>
-                        <input type="text" id="clinicNameInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
-                        <input type="tel" id="clinicPhoneInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                    </div>
-                    
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Endereço Completo</label>
-                        <input type="text" id="clinicAddressInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                    </div>
-                </div>
-                
-                <div class="mt-6">
-                    <button onclick="saveClinicData()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-                        <i class="fas fa-save mr-2"></i>Salvar Alterações
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Procedures Tab -->
-        <div id="proceduresTab" class="tab-content hidden">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-800">Gerenciar Procedimentos</h2>
-                    <button onclick="openAddProcedureModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-medium">
-                        <i class="fas fa-plus mr-2"></i>Adicionar Procedimento
-                    </button>
-                </div>
-                
-                <div id="proceduresContainer" class="space-y-4">
-                    <!-- Procedures will be loaded here -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Appointments Tab -->
-        <div id="appointmentsTab" class="tab-content hidden">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Agendamentos Recebidos</h2>
-                
-                <div id="appointmentsContainer">
-                    <!-- Appointments will be loaded here -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Messages Tab -->
-        <div id="messagesTab" class="tab-content hidden">
-            <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-2xl font-bold text-gray-800 mb-6">Personalizar Mensagens</h2>
-                
-                <div class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Mensagem de Boas-vindas</label>
-                        <textarea id="welcomeMessage" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Mensagem de Agendamento Confirmado</label>
-                        <textarea id="confirmationMessage" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
-                    </div>
-                    
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Mensagem de Horário de Funcionamento</label>
-                        <textarea id="hoursMessage" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
-                    </div>
-                    
-                    <button onclick="saveMessages()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors font-medium">
-                        <i class="fas fa-save mr-2"></i>Salvar Mensagens
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Add/Edit Procedure Modal -->
-    <div id="procedureModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg p-8 w-full max-w-2xl mx-4 max-h-screen overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="text-2xl font-bold text-gray-800" id="modalTitle">Adicionar Procedimento</h3>
-                <button onclick="closeProcedureModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
-                    <i class="fas fa-times"></i>
-                </button>
+    
+    <!-- Proteção de Acesso Admin -->
+    <div id="adminProtection" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 shadow-2xl">
+            <div class="text-center mb-6">
+                <i class="fas fa-shield-alt text-4xl text-purple-600 mb-4"></i>
+                <h2 class="text-2xl font-bold text-gray-800">Acesso Administrativo</h2>
+                <p class="text-gray-600 mt-2">Digite a senha de administrador</p>
             </div>
             
             <div class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Procedimento</label>
-                        <input type="text" id="procedureName" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                <input type="password" id="adminPassword" placeholder="Senha de administrador" 
+                       class="admin-input" onkeypress="if(event.key==='Enter') validateAdminAccess()">
+                <button onclick="validateAdminAccess()" class="admin-button w-full">
+                    <i class="fas fa-unlock mr-2"></i>Acessar Painel
+                </button>
+            </div>
+            
+            <div class="mt-4 text-center">
+                <a href="index.html" class="text-purple-600 hover:underline text-sm">
+                    <i class="fas fa-arrow-left mr-1"></i>Voltar ao sistema principal
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Painel Principal -->
+    <div id="adminPanel" class="hidden">
+        
+        <!-- Header -->
+        <header class="bg-white shadow-lg border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-cogs text-2xl text-purple-600 mr-3"></i>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Painel Administrativo</h1>
+                            <p class="text-gray-600 text-sm">Clínica Bella Estética</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-600" id="currentDateTime"></span>
+                        <button onclick="window.open('index.html', '_blank')" class="admin-button-secondary">
+                            <i class="fas fa-external-link-alt mr-2"></i>Ver Sistema
+                        </button>
+                        <button onclick="logout()" class="admin-button-danger">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Sair
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Estatísticas -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="stats-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-purple-100">Total Procedimentos</p>
+                            <p class="text-2xl font-bold" id="totalProcedures">0</p>
+                        </div>
+                        <i class="fas fa-spa text-3xl text-purple-200"></i>
+                    </div>
+                </div>
+                <div class="stats-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-purple-100">Agendamentos</p>
+                            <p class="text-2xl font-bold" id="totalAppointments">0</p>
+                        </div>
+                        <i class="fas fa-calendar text-3xl text-purple-200"></i>
+                    </div>
+                </div>
+                <div class="stats-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-purple-100">Preço Médio</p>
+                            <p class="text-2xl font-bold" id="averagePrice">R$ 0</p>
+                        </div>
+                        <i class="fas fa-dollar-sign text-3xl text-purple-200"></i>
+                    </div>
+                </div>
+                <div class="stats-card">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-purple-100">Hoje</p>
+                            <p class="text-2xl font-bold" id="todayAppointments">0</p>
+                        </div>
+                        <i class="fas fa-clock text-3xl text-purple-200"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs de Navegação -->
+            <div class="flex space-x-2 mb-6 bg-white p-2 rounded-xl shadow-lg">
+                <button onclick="showTab('clinic')" class="admin-tab active" id="tab-clinic">
+                    <i class="fas fa-hospital mr-2"></i>Dados da Clínica
+                </button>
+                <button onclick="showTab('procedures')" class="admin-tab" id="tab-procedures">
+                    <i class="fas fa-spa mr-2"></i>Procedimentos
+                </button>
+                <button onclick="showTab('schedule')" class="admin-tab" id="tab-schedule">
+                    <i class="fas fa-calendar mr-2"></i>Horários
+                </button>
+                <button onclick="showTab('appointments')" class="admin-tab" id="tab-appointments">
+                    <i class="fas fa-list mr-2"></i>Agendamentos
+                </button>
+                <button onclick="showTab('settings')" class="admin-tab" id="tab-settings">
+                    <i class="fas fa-cog mr-2"></i>Configurações
+                </button>
+            </div>
+
+            <!-- Conteúdo das Abas -->
+            
+            <!-- Aba: Dados da Clínica -->
+            <div id="content-clinic" class="tab-content">
+                <div class="admin-card">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-hospital text-purple-600 mr-2"></i>Informações da Clínica
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nome da Clínica</label>
+                            <input type="text" id="clinicName" class="admin-input" placeholder="Nome da clínica">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Telefone</label>
+                            <input type="text" id="clinicPhone" class="admin-input" placeholder="(00) 00000-0000">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                            <input type="email" id="clinicEmail" class="admin-input" placeholder="contato@clinica.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                            <input type="text" id="clinicWebsite" class="admin-input" placeholder="www.clinica.com">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Endereço Completo</label>
+                            <input type="text" id="clinicAddress" class="admin-input" placeholder="Rua, número - Bairro">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Cidade/Estado</label>
+                            <input type="text" id="clinicCity" class="admin-input" placeholder="Cidade - UF">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">CEP</label>
+                            <input type="text" id="clinicCep" class="admin-input" placeholder="00000-000">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Horários de Funcionamento</label>
+                            <input type="text" id="clinicHours" class="admin-input" placeholder="Segunda a Sexta: 8h às 18h">
+                        </div>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-                        <select id="procedureCategory" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                            <option value="Harmonização Facial">Harmonização Facial</option>
-                            <option value="Tratamentos Faciais">Tratamentos Faciais</option>
-                            <option value="Tratamentos Corporais">Tratamentos Corporais</option>
-                            <option value="Outros">Outros</option>
-                        </select>
+                    <div class="mt-6 flex space-x-4">
+                        <button onclick="saveClinicData()" class="admin-button">
+                            <i class="fas fa-save mr-2"></i>Salvar Alterações
+                        </button>
+                        <button onclick="loadClinicData()" class="admin-button-secondary">
+                            <i class="fas fa-refresh mr-2"></i>Recarregar Dados
+                        </button>
                     </div>
                 </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Preço (R$)</label>
-                        <input type="number" id="procedurePrice" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+            </div>
+
+            <!-- Aba: Procedimentos -->
+            <div id="content-procedures" class="tab-content hidden">
+                <div class="admin-card mb-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-spa text-purple-600 mr-2"></i>Gerenciar Procedimentos
+                        </h3>
+                        <button onclick="openAddProcedureModal()" class="admin-button">
+                            <i class="fas fa-plus mr-2"></i>Novo Procedimento
+                        </button>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Duração (min)</label>
-                        <input type="number" id="procedureDuration" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Procedimento</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Categoria</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Preço</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Duração</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="proceduresTable">
+                                <!-- Preenchido dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba: Horários -->
+            <div id="content-schedule" class="tab-content hidden">
+                <div class="admin-card">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-calendar text-purple-600 mr-2"></i>Configurar Horários de Atendimento
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Horários Disponíveis</label>
+                            <div id="availableHoursList" class="space-y-2 max-h-60 overflow-y-auto">
+                                <!-- Preenchido dinamicamente -->
+                            </div>
+                            <div class="mt-4 flex space-x-2">
+                                <input type="time" id="newHour" class="admin-input flex-1">
+                                <button onclick="addAvailableHour()" class="admin-button">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Dias de Funcionamento</label>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="workDay1" class="mr-2" checked>
+                                    <span>Segunda-feira</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="workDay2" class="mr-2" checked>
+                                    <span>Terça-feira</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="workDay3" class="mr-2" checked>
+                                    <span>Quarta-feira</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="workDay4" class="mr-2" checked>
+                                    <span>Quinta-feira</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="workDay5" class="mr-2" checked>
+                                    <span>Sexta-feira</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="workDay6" class="mr-2" checked>
+                                    <span>Sábado</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" id="workDay0" class="mr-2">
+                                    <span>Domingo</span>
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Ícone (emoji)</label>
-                        <input type="text" id="procedureIcon" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="💉">
+                    <div class="mt-6">
+                        <button onclick="saveScheduleSettings()" class="admin-button">
+                            <i class="fas fa-save mr-2"></i>Salvar Configurações
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba: Agendamentos -->
+            <div id="content-appointments" class="tab-content hidden">
+                <div class="admin-card">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-gray-800">
+                            <i class="fas fa-list text-purple-600 mr-2"></i>Lista de Agendamentos
+                        </h3>
+                        <div class="flex space-x-2">
+                            <input type="date" id="filterDate" class="admin-input" onchange="filterAppointments()">
+                            <button onclick="exportAppointments()" class="admin-button-secondary">
+                                <i class="fas fa-download mr-2"></i>Exportar
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full table-auto">
+                            <thead>
+                                <tr class="bg-gray-50">
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Data/Hora</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Cliente</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Procedimento</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Telefone</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Status</th>
+                                    <th class="px-4 py-3 text-left text-sm font-medium text-gray-700">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appointmentsTable">
+                                <!-- Preenchido dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba: Configurações -->
+            <div id="content-settings" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="admin-card">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">
+                            <i class="fas fa-cog text-purple-600 mr-2"></i>Configurações Gerais
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Máximo de agendamentos por dia</label>
+                                <input type="number" id="maxAppointments" class="admin-input" min="1" max="20">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Dias de antecedência para agendamento</label>
+                                <input type="number" id="bookingAdvanceDays" class="admin-input" min="1" max="90">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Horas mínimas para cancelamento</label>
+                                <input type="number" id="cancellationHours" class="admin-input" min="1" max="72">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">
+                            <i class="fas fa-database text-purple-600 mr-2"></i>Gerenciar Dados
+                        </h3>
+                        
+                        <div class="space-y-4">
+                            <button onclick="backupData()" class="admin-button w-full">
+                                <i class="fas fa-download mr-2"></i>Fazer Backup dos Dados
+                            </button>
+                            <button onclick="document.getElementById('restoreFile').click()" class="admin-button-secondary w-full">
+                                <i class="fas fa-upload mr-2"></i>Restaurar Backup
+                            </button>
+                            <input type="file" id="restoreFile" accept=".json" style="display: none;" onchange="restoreData(event)">
+                            <button onclick="clearAllData()" class="admin-button-danger w-full">
+                                <i class="fas fa-trash mr-2"></i>Limpar Todos os Dados
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
-                    <textarea id="procedureDescription" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Benefícios (um por linha)</label>
-                    <textarea id="procedureBenefits" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Reduz rugas&#10;Melhora autoestima&#10;Resultado duradouro"></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Opções de Pagamento (uma por linha)</label>
-                    <textarea id="procedurePayment" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="À vista com 10% desconto&#10;Cartão em até 6x&#10;PIX"></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Contraindicações</label>
-                    <textarea id="procedureContraindications" rows="2" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
-                </div>
-                
-                <div class="flex space-x-4 pt-4">
-                    <button onclick="saveProcedure()" class="flex-1 bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition-colors font-medium">
-                        <i class="fas fa-save mr-2"></i>Salvar Procedimento
-                    </button>
-                    <button onclick="closeProcedureModal()" class="flex-1 bg-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-400 transition-colors font-medium">
-                        Cancelar
-                    </button>
+                <div class="admin-card mt-6">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">
+                        <i class="fas fa-key text-purple-600 mr-2"></i>Alterar Senhas de Acesso
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nova senha do cliente</label>
+                            <input type="password" id="newClientPassword" class="admin-input" placeholder="Nova senha para clientes">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Nova senha de administrador</label>
+                            <input type="password" id="newAdminPassword" class="admin-input" placeholder="Nova senha de admin">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button onclick="updatePasswords()" class="admin-button">
+                            <i class="fas fa-key mr-2"></i>Atualizar Senhas
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Success Modal -->
-    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg p-8 w-full max-w-md mx-4 text-center">
-            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-check text-green-600 text-2xl"></i>
+    <!-- Modal: Adicionar/Editar Procedimento -->
+    <div id="procedureModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800" id="procedureModalTitle">Novo Procedimento</h3>
+                <button onclick="closeProcedureModal()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
             </div>
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Sucesso!</h3>
-            <p id="adminSuccessMessage" class="text-gray-600 mb-6">Operação realizada com sucesso!</p>
-            <button onclick="closeSuccessModal()" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors font-medium">
-                OK
-            </button>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nome do Procedimento</label>
+                    <input type="text" id="procName" class="admin-input">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
+                    <select id="procCategory" class="admin-input">
+                        <option value="Facial">Facial</option>
+                        <option value="Corporal">Corporal</option>
+                        <option value="Capilar">Capilar</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Preço (R$)</label>
+                    <input type="text" id="procPrice" class="admin-input" placeholder="150,00">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Duração</label>
+                    <input type="text" id="procDuration" class="admin-input" placeholder="60 min">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descrição</label>
+                    <textarea id="procDescription" class="admin-input" rows="3"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ícone (Font Awesome)</label>
+                    <input type="text" id="procIcon" class="admin-input" placeholder="fas fa-spa">
+                </div>
+            </div>
+            
+            <div class="mt-6 flex space-x-4">
+                <button onclick="saveProcedure()" class="admin-button">
+                    <i class="fas fa-save mr-2"></i>Salvar
+                </button>
+                <button onclick="closeProcedureModal()" class="admin-button-secondary">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- Scripts -->
+    <script src="js/shared-data.js"></script>
     <script>
-        // Dados compartilhados entre cliente e admin
-        const STORAGE_KEYS = {
-            CLINIC_DATA: 'chatbot_clinic_data',
-            PROCEDURES: 'chatbot_procedures',
-            APPOINTMENTS: 'chatbot_appointments',
-            MESSAGES: 'chatbot_messages'
-        };
-
-        // Dados padrão da clínica
-        const DEFAULT_CLINIC_DATA = {
-            name: "Clínica Bella Estética",
-            phone: "(27) 99739-3920",
-            address: "Rua das Flores, 123 - Centro, São Paulo - SP"
-        };
-
-        // Procedimentos padrão
-        const DEFAULT_PROCEDURES = [
-            {
-                id: 1,
-                name: "Botox",
-                price: 800,
-                duration: 60,
-                description: "Aplicação de toxina botulínica para redução de rugas e linhas de expressão.",
-                benefits: ["Reduz rugas dinâmicas", "Previne novas linhas", "Resultado natural", "Sem tempo de recuperação"],
-                category: "Harmonização Facial",
-                icon: "💉",
-                paymentOptions: ["À vista com 10% desconto", "Cartão em até 6x", "PIX"],
-                contraindications: "Gravidez, amamentação, doenças neuromusculares"
-            },
-            {
-                id: 2,
-                name: "Preenchimento Labial",
-                price: 1200,
-                duration: 90,
-                description: "Preenchimento com ácido hialurônico para aumento e definição dos lábios.",
-                benefits: ["Lábios mais volumosos", "Contorno definido", "Hidratação profunda", "Resultado imediato"],
-                category: "Harmonização Facial",
-                icon: "💋",
-                paymentOptions: ["À vista com 15% desconto", "Cartão em até 8x", "PIX"],
-                contraindications: "Herpes ativo, alergia ao ácido hialurônico"
-            }
-        ];
-
-        // Mensagens padrão
-        const DEFAULT_MESSAGES = {
-            welcome: "Olá! 😊 Como posso ajudá-lo hoje? Clique nos botões acima ou digite sua pergunta!",
-            confirmation: "🎉 Agendamento confirmado com sucesso! Entraremos em contato em breve para confirmar a disponibilidade.",
-            hours: "🕐 Nossos horários de funcionamento:\n\n• Segunda a Sexta: 08:00 às 18:00\n• Sábado: 08:00 às 14:00\n• Domingo: Fechado\n\nEstamos sempre prontos para recebê-lo! 😊💜"
-        };
-
-        // Funções para gerenciar dados no localStorage
-        const DataManager = {
-            getClinicData() {
-                const stored = localStorage.getItem(STORAGE_KEYS.CLINIC_DATA);
-                return stored ? JSON.parse(stored) : DEFAULT_CLINIC_DATA;
+        // ====================================
+        // SISTEMA ADMINISTRATIVO
+        // ====================================
+        
+        const AdminSystem = {
+            currentEditingProcedure: null,
+            
+            // Senhas de administrador
+            adminPasswords: ['admin2024@bella', 'bella#admin2024', 'estetica@admin', 'dev@admin2024'],
+            
+            init: function() {
+                this.updateDateTime();
+                this.loadStats();
+                this.loadClinicData();
+                this.loadProceduresTable();
+                this.loadAvailableHours();
+                this.loadAppointmentsTable();
+                this.loadSettings();
+                
+                // Atualizar a cada minuto
+                setInterval(() => this.updateDateTime(), 60000);
+                setInterval(() => this.loadStats(), 30000);
             },
             
-            setClinicData(data) {
-                localStorage.setItem(STORAGE_KEYS.CLINIC_DATA, JSON.stringify(data));
+            updateDateTime: function() {
+                const now = new Date();
+                document.getElementById('currentDateTime').textContent = 
+                    now.toLocaleString('pt-BR');
             },
             
-            getProcedures() {
-                const stored = localStorage.getItem(STORAGE_KEYS.PROCEDURES);
-                return stored ? JSON.parse(stored) : DEFAULT_PROCEDURES;
+            loadStats: function() {
+                const stats = DataManager.getStats();
+                document.getElementById('totalProcedures').textContent = stats.totalProcedures;
+                document.getElementById('totalAppointments').textContent = stats.totalAppointments;
+                document.getElementById('todayAppointments').textContent = stats.todayAppointments;
+                document.getElementById('averagePrice').textContent = stats.averagePrice;
             },
             
-            setProcedures(procedures) {
-                localStorage.setItem(STORAGE_KEYS.PROCEDURES, JSON.stringify(procedures));
+            loadClinicData: function() {
+                const clinic = DataManager.clinicData;
+                document.getElementById('clinicName').value = clinic.name;
+                document.getElementById('clinicPhone').value = clinic.phone;
+                document.getElementById('clinicEmail').value = clinic.email;
+                document.getElementById('clinicWebsite').value = clinic.website;
+                document.getElementById('clinicAddress').value = clinic.address;
+                document.getElementById('clinicCity').value = clinic.city;
+                document.getElementById('clinicCep').value = clinic.cep;
+                document.getElementById('clinicHours').value = clinic.hours;
             },
             
-            addProcedure(procedure) {
-                const procedures = this.getProcedures();
-                procedure.id = Date.now();
-                procedures.push(procedure);
-                this.setProcedures(procedures);
-                return procedure;
+            saveClinicData: function() {
+                DataManager.clinicData.name = document.getElementById('clinicName').value;
+                DataManager.clinicData.phone = document.getElementById('clinicPhone').value;
+                DataManager.clinicData.email = document.getElementById('clinicEmail').value;
+                DataManager.clinicData.website = document.getElementById('clinicWebsite').value;
+                DataManager.clinicData.address = document.getElementById('clinicAddress').value;
+                DataManager.clinicData.city = document.getElementById('clinicCity').value;
+                DataManager.clinicData.cep = document.getElementById('clinicCep').value;
+                DataManager.clinicData.hours = document.getElementById('clinicHours').value;
+                
+                DataManager.saveToStorage();
+                this.showNotification('Dados da clínica salvos com sucesso!', 'success');
             },
             
-            updateProcedure(id, updatedProcedure) {
-                const procedures = this.getProcedures();
-                const index = procedures.findIndex(p => p.id === id);
-                if (index !== -1) {
-                    procedures[index] = { ...procedures[index], ...updatedProcedure };
-                    this.setProcedures(procedures);
-                    return procedures[index];
+            loadProceduresTable: function() {
+                const tbody = document.getElementById('proceduresTable');
+                let html = '';
+                
+                DataManager.procedures.forEach(proc => {
+                    html += `
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="px-4 py-3">
+                                <div class="flex items-center">
+                                    <i class="${proc.icon} text-purple-600 mr-2"></i>
+                                    <span class="font-medium">${proc.name}</span>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">${proc.category}</td>
+                            <td class="px-4 py-3 font-bold text-purple-600">${proc.price}</td>
+                            <td class="px-4 py-3">${proc.duration}</td>
+                            <td class="px-4 py-3">
+                                <div class="flex space-x-2">
+                                    <button onclick="AdminSystem.editProcedure(${proc.id})" class="text-blue-600 hover:text-blue-800">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button onclick="AdminSystem.deleteProcedure(${proc.id})" class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tbody.innerHTML = html;
+            },
+            
+            loadAvailableHours: function() {
+                const container = document.getElementById('availableHoursList');
+                let html = '';
+                
+                DataManager.availableHours.forEach((hour, index) => {
+                    html += `
+                        <div class="flex items-center justify-between bg-gray-50 p-2 rounded">
+                            <span>${hour}</span>
+                            <button onclick="AdminSystem.removeAvailableHour(${index})" class="text-red-600 hover:text-red-800">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            },
+            
+            loadAppointmentsTable: function() {
+                const tbody = document.getElementById('appointmentsTable');
+                let html = '';
+                
+                DataManager.appointments.forEach(apt => {
+                    const date = DataManager.formatDate(apt.date);
+                    const time = DataManager.formatTime(apt.time);
+                    
+                    html += `
+                        <tr class="border-b border-gray-200 hover:bg-gray-50">
+                            <td class="px-4 py-3">
+                                <div class="text-sm">
+                                    <div class="font-medium">${date}</div>
+                                    <div class="text-gray-600">${time}</div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 font-medium">${apt.clientName}</td>
+                            <td class="px-4 py-3">${apt.procedure.name}</td>
+                            <td class="px-4 py-3">${apt.clientPhone}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                                    ${apt.status || 'Agendado'}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex space-x-2">
+                                    <button onclick="AdminSystem.contactClient('${apt.clientPhone}')" class="text-green-600 hover:text-green-800">
+                                        <i class="fab fa-whatsapp"></i>
+                                    </button>
+                                    <button onclick="AdminSystem.deleteAppointment('${apt.id}')" class="text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                tbody.innerHTML = html || '<tr><td colspan="6" class="text-center py-4 text-gray-500">Nenhum agendamento encontrado</td></tr>';
+            },
+            
+            loadSettings: function() {
+                const config = DataManager.systemConfig;
+                document.getElementById('maxAppointments').value = config.maxAppointmentsPerDay;
+                document.getElementById('bookingAdvanceDays').value = config.bookingAdvanceDays;
+                document.getElementById('cancellationHours').value = config.cancellationHours;
+                
+                // Carregar dias de trabalho
+                config.workingDays.forEach(day => {
+                    const checkbox = document.getElementById(`workDay${day}`);
+                    if (checkbox) checkbox.checked = true;
+                });
+            },
+            
+            editProcedure: function(id) {
+                const procedure = DataManager.getProcedureById(id);
+                if (!procedure) return;
+                
+                this.currentEditingProcedure = procedure;
+                
+                document.getElementById('procedureModalTitle').textContent = 'Editar Procedimento';
+                document.getElementById('procName').value = procedure.name;
+                document.getElementById('procCategory').value = procedure.category;
+                document.getElementById('procPrice').value = procedure.price.replace('R$ ', '');
+                document.getElementById('procDuration').value = procedure.duration;
+                document.getElementById('procDescription').value = procedure.description;
+                document.getElementById('procIcon').value = procedure.icon;
+                
+                document.getElementById('procedureModal').classList.remove('hidden');
+            },
+            
+            deleteProcedure: function(id) {
+                if (confirm('Tem certeza que deseja excluir este procedimento?')) {
+                    const index = DataManager.procedures.findIndex(p => p.id === id);
+                    if (index > -1) {
+                        DataManager.procedures.splice(index, 1);
+                        DataManager.saveToStorage();
+                        this.loadProceduresTable();
+                        this.loadStats();
+                        this.showNotification('Procedimento excluído com sucesso!', 'success');
+                    }
                 }
-                return null;
             },
             
-            deleteProcedure(id) {
-                const procedures = this.getProcedures();
-                const filtered = procedures.filter(p => p.id !== id);
-                this.setProcedures(filtered);
+            contactClient: function(phone) {
+                const whatsappUrl = `https://wa.me/55${phone.replace(/\D/g, '')}`;
+                window.open(whatsappUrl, '_blank');
             },
             
-            getAppointments() {
-                const stored = localStorage.getItem(STORAGE_KEYS.APPOINTMENTS);
-                return stored ? JSON.parse(stored) : [];
-            },
-            
-            setAppointments(appointments) {
-                localStorage.setItem(STORAGE_KEYS.APPOINTMENTS, JSON.stringify(appointments));
-            },
-            
-            updateAppointmentStatus(id, status) {
-                const appointments = this.getAppointments();
-                const index = appointments.findIndex(a => a.id === id);
-                if (index !== -1) {
-                    appointments[index].status = status;
-                    this.setAppointments(appointments);
-                    return appointments[index];
+            deleteAppointment: function(id) {
+                if (confirm('Tem certeza que deseja excluir este agendamento?')) {
+                    const index = DataManager.appointments.findIndex(a => a.id == id);
+                    if (index > -1) {
+                        DataManager.appointments.splice(index, 1);
+                        DataManager.saveToStorage();
+                        this.loadAppointmentsTable();
+                        this.loadStats();
+                        this.showNotification('Agendamento excluído com sucesso!', 'success');
+                    }
                 }
-                return null;
             },
             
-            deleteAppointment(id) {
-                const appointments = this.getAppointments();
-                const filtered = appointments.filter(a => a.id !== id);
-                this.setAppointments(filtered);
-            },
-            
-            getMessages() {
-                const stored = localStorage.getItem(STORAGE_KEYS.MESSAGES);
-                return stored ? JSON.parse(stored) : DEFAULT_MESSAGES;
-            },
-            
-            setMessages(messages) {
-                localStorage.setItem(STORAGE_KEYS.MESSAGES, JSON.stringify(messages));
+            showNotification: function(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg max-w-sm ${
+                    type === 'error' ? 'bg-red-600' : 
+                    type === 'success' ? 'bg-green-600' : 
+                    'bg-blue-600'
+                } text-white`;
+                
+                notification.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas ${type === 'error' ? 'fa-exclamation-triangle' : type === 'success' ? 'fa-check-circle' : 'fa-info-circle'} mr-2"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 5000);
             }
         };
-
-        // Initialize default data if not exists
-        if (!localStorage.getItem(STORAGE_KEYS.CLINIC_DATA)) {
-            DataManager.setClinicData(DEFAULT_CLINIC_DATA);
+        
+        // ====================================
+        // FUNÇÕES GLOBAIS
+        // ====================================
+        
+        function validateAdminAccess() {
+            const password = document.getElementById('adminPassword').value;
+            
+            if (AdminSystem.adminPasswords.includes(password)) {
+                document.getElementById('adminProtection').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                AdminSystem.init();
+            } else {
+                AdminSystem.showNotification('Senha incorreta!', 'error');
+                document.getElementById('adminPassword').value = '';
+            }
         }
-        if (!localStorage.getItem(STORAGE_KEYS.PROCEDURES)) {
-            DataManager.setProcedures(DEFAULT_PROCEDURES);
+        
+        function logout() {
+            if (confirm('Tem certeza que deseja sair?')) {
+                location.reload();
+            }
         }
-        if (!localStorage.getItem(STORAGE_KEYS.MESSAGES)) {
-            DataManager.setMessages(DEFAULT_MESSAGES);
-        }
-
-        // Admin JavaScript
-        let currentEditingProcedure = null;
-
-        // Initialize admin
-        document.addEventListener('DOMContentLoaded', function() {
-            loadClinicData();
-            loadProcedures();
-            loadAppointments();
-            loadMessages();
-        });
-
-        // Tab management
-        function showTab(tabName, buttonElement) {
-            // Hide all tabs
+        
+        function showTab(tabName) {
+            // Esconder todas as abas
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.add('hidden');
             });
             
-            // Remove active class from all buttons
-            document.querySelectorAll('.tab-button').forEach(button => {
-                button.classList.remove('active', 'text-indigo-600', 'border-indigo-600');
-                button.classList.add('text-gray-500', 'border-transparent');
+            // Remover classe active de todas as tabs
+            document.querySelectorAll('.admin-tab').forEach(tab => {
+                tab.classList.remove('active');
             });
             
-            // Show selected tab
-            document.getElementById(tabName + 'Tab').classList.remove('hidden');
-            
-            // Add active class to selected button
-            if (buttonElement) {
-                buttonElement.classList.add('active', 'text-indigo-600', 'border-indigo-600');
-                buttonElement.classList.remove('text-gray-500', 'border-transparent');
-            }
-            
-            // Reload data for specific tabs
-            if (tabName === 'appointments') {
-                loadAppointments();
-            } else if (tabName === 'procedures') {
-                loadProcedures();
-            } else if (tabName === 'messages') {
-                loadMessages();
-            } else if (tabName === 'clinic') {
-                loadClinicData();
-            }
+            // Mostrar aba selecionada
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
         }
-
-        // Clinic Data Management
-        function loadClinicData() {
-            const clinicData = DataManager.getClinicData();
-            document.getElementById('clinicNameInput').value = clinicData.name;
-            document.getElementById('clinicPhoneInput').value = clinicData.phone;
-            document.getElementById('clinicAddressInput').value = clinicData.address;
-        }
-
+        
         function saveClinicData() {
-            const clinicData = {
-                name: document.getElementById('clinicNameInput').value.trim(),
-                phone: document.getElementById('clinicPhoneInput').value.trim(),
-                address: document.getElementById('clinicAddressInput').value.trim()
-            };
-            
-            if (!clinicData.name || !clinicData.phone || !clinicData.address) {
-                alert('Por favor, preencha todos os campos obrigatórios.');
-                return;
-            }
-            
-            DataManager.setClinicData(clinicData);
-            showAdminSuccess('Dados da clínica salvos com sucesso! 🏥✅');
+            AdminSystem.saveClinicData();
         }
-
-        // Procedures Management
-        function loadProcedures() {
-            const procedures = DataManager.getProcedures();
-            const container = document.getElementById('proceduresContainer');
-            
-            if (procedures.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-12 text-gray-500">
-                        <i class="fas fa-spa text-4xl mb-4"></i>
-                        <p class="text-lg">Nenhum procedimento cadastrado ainda.</p>
-                        <p class="text-sm">Clique em "Adicionar Procedimento" para começar.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            container.innerHTML = '';
-            
-            procedures.forEach(procedure => {
-                const procedureCard = document.createElement('div');
-                procedureCard.className = 'procedure-card bg-gray-50 rounded-lg p-6 border border-gray-200';
-                procedureCard.innerHTML = `
-                    <div class="flex items-start justify-between">
-                        <div class="flex items-start space-x-4 flex-1">
-                            <span class="text-3xl">${procedure.icon}</span>
-                            <div class="flex-1">
-                                <div class="flex items-center space-x-3 mb-2">
-                                    <h3 class="text-lg font-bold text-gray-800">${procedure.name}</h3>
-                                    <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-medium">${procedure.category}</span>
-                                </div>
-                                <p class="text-gray-600 text-sm mb-3">${procedure.description}</p>
-                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                    <div>
-                                        <span class="text-gray-500">Preço:</span>
-                                        <div class="font-semibold text-green-600">R$ ${procedure.price.toLocaleString('pt-BR')}</div>
-                                    </div>
-                                    <div>
-                                        <span class="text-gray-500">Duração:</span>
-                                        <div class="font-semibold">${procedure.duration} min</div>
-                                    </div>
-                                    <div>
-                                        <span class="text-gray-500">Benefícios:</span>
-                                        <div class="font-semibold">${procedure.benefits.length} itens</div>
-                                    </div>
-                                    <div>
-                                        <span class="text-gray-500">Pagamento:</span>
-                                        <div class="font-semibold">${procedure.paymentOptions.length} opções</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="flex space-x-2 ml-4">
-                            <button onclick="editProcedure(${procedure.id})" class="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm">
-                                <i class="fas fa-edit mr-1"></i>Editar
-                            </button>
-                            <button onclick="deleteProcedure(${procedure.id})" class="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm">
-                                <i class="fas fa-trash mr-1"></i>Excluir
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(procedureCard);
-            });
+        
+        function loadClinicData() {
+            AdminSystem.loadClinicData();
         }
-
+        
         function openAddProcedureModal() {
-            currentEditingProcedure = null;
-            document.getElementById('modalTitle').textContent = 'Adicionar Procedimento';
-            clearProcedureForm();
-            openProcedureModal();
-        }
-
-        function editProcedure(id) {
-            const procedures = DataManager.getProcedures();
-            const procedure = procedures.find(p => p.id === id);
+            AdminSystem.currentEditingProcedure = null;
+            document.getElementById('procedureModalTitle').textContent = 'Novo Procedimento';
             
-            if (!procedure) return;
+            // Limpar campos
+            ['procName', 'procPrice', 'procDuration', 'procDescription', 'procIcon'].forEach(id => {
+                document.getElementById(id).value = '';
+            });
+            document.getElementById('procCategory').value = 'Facial';
             
-            currentEditingProcedure = procedure;
-            document.getElementById('modalTitle').textContent = 'Editar Procedimento';
-            
-            // Fill form with procedure data
-            document.getElementById('procedureName').value = procedure.name;
-            document.getElementById('procedureCategory').value = procedure.category;
-            document.getElementById('procedurePrice').value = procedure.price;
-            document.getElementById('procedureDuration').value = procedure.duration;
-            document.getElementById('procedureIcon').value = procedure.icon;
-            document.getElementById('procedureDescription').value = procedure.description;
-            document.getElementById('procedureBenefits').value = procedure.benefits.join('\n');
-            document.getElementById('procedurePayment').value = procedure.paymentOptions.join('\n');
-            document.getElementById('procedureContraindications').value = procedure.contraindications;
-            
-            openProcedureModal();
+            document.getElementById('procedureModal').classList.remove('hidden');
         }
-
-        function deleteProcedure(id) {
-            if (confirm('Tem certeza que deseja excluir este procedimento? Esta ação não pode ser desfeita.')) {
-                DataManager.deleteProcedure(id);
-                loadProcedures();
-                showAdminSuccess('Procedimento excluído com sucesso! 🗑️✅');
-            }
-        }
-
-        function openProcedureModal() {
-            const modal = document.getElementById('procedureModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
+        
         function closeProcedureModal() {
-            const modal = document.getElementById('procedureModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-            currentEditingProcedure = null;
+            document.getElementById('procedureModal').classList.add('hidden');
         }
-
-        function clearProcedureForm() {
-            document.getElementById('procedureName').value = '';
-            document.getElementById('procedureCategory').value = 'Harmonização Facial';
-            document.getElementById('procedurePrice').value = '';
-            document.getElementById('procedureDuration').value = '';
-            document.getElementById('procedureIcon').value = '';
-            document.getElementById('procedureDescription').value = '';
-            document.getElementById('procedureBenefits').value = '';
-            document.getElementById('procedurePayment').value = '';
-            document.getElementById('procedureContraindications').value = '';
-        }
-
+        
         function saveProcedure() {
-            const procedureData = {
-                name: document.getElementById('procedureName').value.trim(),
-                category: document.getElementById('procedureCategory').value,
-                price: parseFloat(document.getElementById('procedurePrice').value),
-                duration: parseInt(document.getElementById('procedureDuration').value),
-                icon: document.getElementById('procedureIcon').value.trim(),
-                description: document.getElementById('procedureDescription').value.trim(),
-                benefits: document.getElementById('procedureBenefits').value.trim().split('\n').filter(b => b.trim()),
-                paymentOptions: document.getElementById('procedurePayment').value.trim().split('\n').filter(p => p.trim()),
-                contraindications: document.getElementById('procedureContraindications').value.trim()
+            const data = {
+                name: document.getElementById('procName').value,
+                category: document.getElementById('procCategory').value,
+                price: 'R$ ' + document.getElementById('procPrice').value,
+                duration: document.getElementById('procDuration').value,
+                description: document.getElementById('procDescription').value,
+                icon: document.getElementById('procIcon').value || 'fas fa-spa'
             };
             
-            // Validation
-            if (!procedureData.name || !procedureData.description || !procedureData.icon) {
-                alert('Por favor, preencha todos os campos obrigatórios (Nome, Descrição e Ícone).');
+            if (!data.name || !data.price || !data.duration) {
+                AdminSystem.showNotification('Preencha todos os campos obrigatórios!', 'error');
                 return;
             }
             
-            if (isNaN(procedureData.price) || procedureData.price <= 0) {
-                alert('Por favor, insira um preço válido.');
-                return;
-            }
-            
-            if (isNaN(procedureData.duration) || procedureData.duration <= 0) {
-                alert('Por favor, insira uma duração válida.');
-                return;
-            }
-            
-            if (procedureData.benefits.length === 0) {
-                alert('Por favor, adicione pelo menos um benefício.');
-                return;
-            }
-            
-            if (procedureData.paymentOptions.length === 0) {
-                alert('Por favor, adicione pelo menos uma opção de pagamento.');
-                return;
-            }
-            
-            if (currentEditingProcedure) {
-                // Update existing procedure
-                DataManager.updateProcedure(currentEditingProcedure.id, procedureData);
-                showAdminSuccess('Procedimento atualizado com sucesso! ✏️✅');
-            } else {
-                // Add new procedure
-                DataManager.addProcedure(procedureData);
-                showAdminSuccess('Procedimento adicionado com sucesso! ➕✅');
-            }
-            
-            closeProcedureModal();
-            loadProcedures();
-        }
-
-        // Appointments Management
-        function loadAppointments() {
-            const appointments = DataManager.getAppointments();
-            const container = document.getElementById('appointmentsContainer');
-            
-            if (appointments.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-12 text-gray-500">
-                        <i class="fas fa-calendar-alt text-4xl mb-4"></i>
-                        <p class="text-lg">Nenhum agendamento recebido ainda.</p>
-                        <p class="text-sm">Os agendamentos aparecerão aqui quando os clientes utilizarem o chatbot.</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            // Sort appointments by date (newest first)
-            appointments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-            
-            container.innerHTML = '';
-            
-            appointments.forEach(appointment => {
-                const appointmentCard = document.createElement('div');
-                appointmentCard.className = 'bg-white border border-gray-200 rounded-lg p-6 mb-4 shadow-sm';
-                
-                const statusColor = {
-                    'agendado': 'bg-yellow-100 text-yellow-800',
-                    'confirmado': 'bg-green-100 text-green-800',
-                    'cancelado': 'bg-red-100 text-red-800',
-                    'concluido': 'bg-blue-100 text-blue-800'
-                };
-                
-                const formattedDate = new Date(appointment.date).toLocaleDateString('pt-BR');
-                const createdDate = new Date(appointment.createdAt).toLocaleString('pt-BR');
-                
-                appointmentCard.innerHTML = `
-                    <div class="flex items-start justify-between mb-4">
-                        <div class="flex items-center space-x-3">
-                            <span class="text-2xl">${appointment.procedureIcon}</span>
-                            <div>
-                                <h3 class="text-lg font-bold text-gray-800">${appointment.procedure}</h3>
-                                <p class="text-sm text-gray-600">ID: #${appointment.id}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-3">
-                            <span class="px-3 py-1 rounded-full text-xs font-medium ${statusColor[appointment.status] || statusColor.agendado}">
-                                ${appointment.status.toUpperCase()}
-                            </span>
-                            <div class="relative">
-                                <button onclick="toggleAppointmentMenu(${appointment.id})" class="text-gray-500 hover:text-gray-700">
-                                    <i class="fas fa-ellipsis-v"></i>
-                                </button>
-                                <div id="menu-${appointment.id}" class="hidden absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                                    <button onclick="updateAppointmentStatus(${appointment.id}, 'confirmado')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-green-600">
-                                        <i class="fas fa-check mr-2"></i>Confirmar
-                                    </button>
-                                    <button onclick="updateAppointmentStatus(${appointment.id}, 'cancelado')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-red-600">
-                                        <i class="fas fa-times mr-2"></i>Cancelar
-                                    </button>
-                                    <button onclick="updateAppointmentStatus(${appointment.id}, 'concluido')" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-blue-600">
-                                        <i class="fas fa-check-double mr-2"></i>Concluído
-                                    </button>
-                                    <hr class="my-1">
-                                    <button onclick="deleteAppointment(${appointment.id})" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 text-red-600">
-                                        <i class="fas fa-trash mr-2"></i>Excluir
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                        <div>
-                            <span class="text-gray-500 text-sm">Cliente:</span>
-                            <div class="font-semibold">${appointment.clientName}</div>
-                            <div class="text-sm text-gray-600">${appointment.clientPhone}</div>
-                        </div>
-                        <div>
-                            <span class="text-gray-500 text-sm">Data e Horário:</span>
-                            <div class="font-semibold">${formattedDate}</div>
-                            <div class="text-sm text-gray-600">${appointment.time} (${appointment.duration} min)</div>
-                        </div>
-                        <div>
-                            <span class="text-gray-500 text-sm">Valor:</span>
-                            <div class="font-semibold text-green-600">R$ ${appointment.price.toLocaleString('pt-BR')}</div>
-                        </div>
-                        <div>
-                            <span class="text-gray-500 text-sm">Agendado em:</span>
-                            <div class="text-sm text-gray-600">${createdDate}</div>
-                        </div>
-                    </div>
-                    
-                    ${appointment.notes ? `
-                        <div class="bg-gray-50 p-3 rounded-lg mb-4">
-                            <span class="text-gray-500 text-sm">Observações:</span>
-                            <div class="text-sm mt-1">${appointment.notes}</div>
-                        </div>
-                    ` : ''}
-                    
-                    <div class="flex space-x-3">
-                        <button onclick="contactClient('${appointment.clientPhone}', '${appointment.clientName}')" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors text-sm flex items-center">
-                            <i class="fab fa-whatsapp mr-2"></i>Contatar Cliente
-                        </button>
-                        <button onclick="copyAppointmentInfo(${appointment.id})" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm flex items-center">
-                            <i class="fas fa-copy mr-2"></i>Copiar Dados
-                        </button>
-                    </div>
-                `;
-                
-                container.appendChild(appointmentCard);
-            });
-        }
-
-        function toggleAppointmentMenu(appointmentId) {
-            const menu = document.getElementById(`menu-${appointmentId}`);
-            
-            // Close all other menus
-            document.querySelectorAll('[id^="menu-"]').forEach(m => {
-                if (m.id !== `menu-${appointmentId}`) {
-                    m.classList.add('hidden');
+            if (AdminSystem.currentEditingProcedure) {
+                // Editar existente
+                const index = DataManager.procedures.findIndex(p => p.id === AdminSystem.currentEditingProcedure.id);
+                if (index > -1) {
+                    DataManager.procedures[index] = { ...DataManager.procedures[index], ...data };
                 }
-            });
+            } else {
+                // Adicionar novo
+                const newProcedure = {
+                    id: Date.now(),
+                    ...data,
+                    benefits: ['Benefício 1', 'Benefício 2', 'Benefício 3'],
+                    contraindications: ['Consulte um profissional'],
+                    aftercare: 'Siga as orientações do profissional'
+                };
+                DataManager.procedures.push(newProcedure);
+            }
             
-            menu.classList.toggle('hidden');
+            DataManager.saveToStorage();
+            AdminSystem.loadProceduresTable();
+            AdminSystem.loadStats();
+            closeProcedureModal();
+            AdminSystem.showNotification('Procedimento salvo com sucesso!', 'success');
         }
-
-        function updateAppointmentStatus(appointmentId, newStatus) {
-            DataManager.updateAppointmentStatus(appointmentId, newStatus);
-            loadAppointments();
+        
+        function addAvailableHour() {
+            const newHour = document.getElementById('newHour').value;
+            if (newHour && !DataManager.availableHours.includes(newHour)) {
+                DataManager.availableHours.push(newHour);
+                DataManager.availableHours.sort();
+                DataManager.saveToStorage();
+                AdminSystem.loadAvailableHours();
+                document.getElementById('newHour').value = '';
+                AdminSystem.showNotification('Horário adicionado com sucesso!', 'success');
+            }
+        }
+        
+        function saveScheduleSettings() {
+            const workingDays = [];
+            for (let i = 0; i <= 6; i++) {
+                const checkbox = document.getElementById(`workDay${i}`);
+                if (checkbox && checkbox.checked) {
+                    workingDays.push(i);
+                }
+            }
             
-            const statusMessages = {
-                'confirmado': 'Agendamento confirmado! ✅',
-                'cancelado': 'Agendamento cancelado! ❌',
-                'concluido': 'Agendamento marcado como concluído! 🎉'
+            DataManager.systemConfig.workingDays = workingDays;
+            DataManager.saveToStorage();
+            AdminSystem.showNotification('Configurações de horário salvos!', 'success');
+        }
+        
+        function filterAppointments() {
+            const filterDate = document.getElementById('filterDate').value;
+            // Implementar filtro se necessário
+            AdminSystem.loadAppointmentsTable();
+        }
+        
+        function exportAppointments() {
+            const data = DataManager.appointments.map(apt => ({
+                data: apt.date,
+                horario: apt.time,
+                cliente: apt.clientName,
+                telefone: apt.clientPhone,
+                procedimento: apt.procedure.name,
+                preco: apt.procedure.price
+            }));
+            
+            const csv = [
+                ['Data', 'Horário', 'Cliente', 'Telefone', 'Procedimento', 'Preço'],
+                ...data.map(row => Object.values(row))
+            ].map(row => row.join(',')).join('\n');
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `agendamentos-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function backupData() {
+            const backup = {
+                clinicData: DataManager.clinicData,
+                procedures: DataManager.procedures,
+                appointments: DataManager.appointments,
+                availableHours: DataManager.availableHours,
+                systemConfig: DataManager.systemConfig,
+                backupDate: new Date().toISOString()
             };
             
-            showAdminSuccess(statusMessages[newStatus] || 'Status atualizado!');
-        }
-
-        function deleteAppointment(appointmentId) {
-            if (confirm('Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.')) {
-                DataManager.deleteAppointment(appointmentId);
-                loadAppointments();
-                showAdminSuccess('Agendamento excluído com sucesso! 🗑️✅');
-            }
-        }
-
-        function contactClient(phone, name) {
-            const cleanPhone = phone.replace(/\D/g, '');
-            const message = `Olá ${name}! 😊\n\nEste é um contato da nossa clínica sobre seu agendamento.\n\nComo podemos ajudá-lo?`;
-            const encodedMessage = encodeURIComponent(message);
-            const whatsappUrl = `https://api.whatsapp.com/send?phone=55${cleanPhone}&text=${encodedMessage}`;
-            window.open(whatsappUrl, '_blank');
-        }
-
-        function copyAppointmentInfo(appointmentId) {
-            const appointments = DataManager.getAppointments();
-            const appointment = appointments.find(a => a.id === appointmentId);
+            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup-bella-clinica-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
             
-            if (!appointment) return;
-            
-            const formattedDate = new Date(appointment.date).toLocaleDateString('pt-BR');
-            const info = `AGENDAMENTO #${appointment.id}
-            
-Cliente: ${appointment.clientName}
-Telefone: ${appointment.clientPhone}
-Procedimento: ${appointment.procedure}
-Data: ${formattedDate}
-Horário: ${appointment.time}
-Duração: ${appointment.duration} minutos
-Valor: R$ ${appointment.price.toLocaleString('pt-BR')}
-Status: ${appointment.status.toUpperCase()}
-${appointment.notes ? `Observações: ${appointment.notes}` : ''}`;
-
-            navigator.clipboard.writeText(info).then(() => {
-                showAdminSuccess('Dados do agendamento copiados! 📋✅');
-            }).catch(() => {
-                // Fallback
-                const textArea = document.createElement('textarea');
-                textArea.value = info;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showAdminSuccess('Dados do agendamento copiados! 📋✅');
-            });
+            AdminSystem.showNotification('Backup criado com sucesso!', 'success');
         }
-
-        // Messages Management
-        function loadMessages() {
-            const messages = DataManager.getMessages();
-            document.getElementById('welcomeMessage').value = messages.welcome;
-            document.getElementById('confirmationMessage').value = messages.confirmation;
-            document.getElementById('hoursMessage').value = messages.hours;
-        }
-
-        function saveMessages() {
-            const messages = {
-                welcome: document.getElementById('welcomeMessage').value.trim(),
-                confirmation: document.getElementById('confirmationMessage').value.trim(),
-                hours: document.getElementById('hoursMessage').value.trim()
+        
+        function restoreData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const backup = JSON.parse(e.target.result);
+                    
+                    if (confirm('Tem certeza que deseja restaurar o backup? Todos os dados atuais serão substituídos!')) {
+                        DataManager.clinicData = backup.clinicData || DataManager.clinicData;
+                        DataManager.procedures = backup.procedures || DataManager.procedures;
+                        DataManager.appointments = backup.appointments || [];
+                        DataManager.availableHours = backup.availableHours || DataManager.availableHours;
+                        DataManager.systemConfig = { ...DataManager.systemConfig, ...backup.systemConfig };
+                        
+                        DataManager.saveToStorage();
+                        AdminSystem.init();
+                        AdminSystem.showNotification('Backup restaurado com sucesso!', 'success');
+                    }
+                } catch (error) {
+                    AdminSystem.showNotification('Erro ao restaurar backup!', 'error');
+                }
             };
-            
-            if (!messages.welcome || !messages.confirmation || !messages.hours) {
-                alert('Por favor, preencha todas as mensagens.');
-                return;
+            reader.readAsText(file);
+        }
+        
+        function clearAllData() {
+            if (confirm('ATENÇÃO: Isso irá apagar TODOS os dados do sistema! Tem certeza?')) {
+                if (confirm('Esta ação não pode ser desfeita. Confirma a exclusão de todos os dados?')) {
+                    DataManager.clearStorage();
+                    location.reload();
+                }
             }
+        }
+        
+        function updatePasswords() {
+            const clientPass = document.getElementById('newClientPassword').value;
+            const adminPass = document.getElementById('newAdminPassword').value;
             
-            DataManager.setMessages(messages);
-            showAdminSuccess('Mensagens personalizadas salvas com sucesso! 💬✅');
-        }
-
-        // Utility functions
-        function showAdminSuccess(message) {
-            document.getElementById('adminSuccessMessage').textContent = message;
-            const modal = document.getElementById('successModal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeSuccessModal() {
-            const modal = document.getElementById('successModal');
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        // Close menus when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('[onclick^="toggleAppointmentMenu"]')) {
-                document.querySelectorAll('[id^="menu-"]').forEach(menu => {
-                    menu.classList.add('hidden');
-                });
+            if (clientPass || adminPass) {
+                AdminSystem.showNotification('Senhas atualizadas! (Funcionalidade simulada)', 'success');
+                document.getElementById('newClientPassword').value = '';
+                document.getElementById('newAdminPassword').value = '';
             }
+        }
+        
+        // Remover horário disponível
+        AdminSystem.removeAvailableHour = function(index) {
+            DataManager.availableHours.splice(index, 1);
+            DataManager.saveToStorage();
+            this.loadAvailableHours();
+            this.showNotification('Horário removido!', 'success');
+        };
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Aguardar DataManager
+            setTimeout(() => {
+                console.log('🛠️ Painel Administrativo carregado!');
+            }, 100);
         });
     </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'979463f2005e6485',t:'MTc1Njg5MzUyNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97951703e1f56485',t:'MTc1NjkwMDg1OS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
