@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clínica Bella Estética - Atendimento Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-2xl">
+        <div class="container mx-auto px-6 py-6">
+            <div class="flex items-center justify-center">
+                <div class="flex items-center space-x-4">
+                    <div class="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center floating-animation">
+                        <i class="fas fa-spa text-2xl"></i>
+                    </div>
+                    <div class="text-center">
+                        <h1 class="text-3xl font-bold" id="clinicName">Clínica Bella Estética</h1>
+                        <p class="text-lg opacity-90">Atendimento Online 24h</p>
+                        <div class="flex items-center justify-center mt-2 space-x-2">
+                            <div class="w-3 h-3 bg-green-400 rounded-full pulse-animation"></div>
+                            <span class="text-sm">Online agora</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Chat Container -->
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+            <!-- Welcome Section -->
+            <div class="bg-gradient-to-r from-purple-100 to-pink-100 p-6 text-center">
+                <div class="mb-4">
+                    <div class="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4 floating-animation">
+                        <i class="fas fa-robot text-white text-3xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Olá! Bem-vindo(a)! 👋</h2>
+                    <p class="text-gray-600">Sou sua assistente virtual. Estou aqui para ajudar com informações sobre nossos procedimentos, agendamentos e muito mais!</p>
+                </div>
+                
+                <!-- Quick Start Buttons -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-6">
+                    <button onclick="sendQuickMessage('Quero agendar')" class="bg-white text-purple-700 px-4 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-sm font-medium">
+                        📅 Agendar
+                    </button>
+                    <button onclick="sendQuickMessage('Ver procedimentos')" class="bg-white text-pink-700 px-4 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-sm font-medium">
+                        💆‍♀️ Procedimentos
+                    </button>
+                    <button onclick="sendQuickMessage('Preços')" class="bg-white text-green-700 px-4 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-sm font-medium">
+                        💰 Preços
+                    </button>
+                    <button onclick="sendQuickMessage('Localização')" class="bg-white text-blue-700 px-4 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 text-sm font-medium">
+                        📍 Localização
+                    </button>
+                </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="h-96 overflow-y-auto p-6 bg-gray-50">
+                <!-- Messages will be loaded here -->
+            </div>
+
+            <!-- Procedures Dropdown -->
+            <div id="proceduresDropdown" class="hidden absolute bottom-20 left-4 right-4 bg-white border border-gray-200 rounded-2xl shadow-2xl z-10 max-h-80 overflow-y-auto">
+                <div class="p-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white">
+                    <h3 class="font-bold text-lg">Nossos Procedimentos</h3>
+                    <p class="text-sm opacity-90">Clique para saber mais sobre cada tratamento</p>
+                </div>
+                <div id="proceduresList">
+                    <!-- Procedures will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Chat Input -->
+            <div class="p-6 bg-white border-t border-gray-200">
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+                    <button onclick="sendQuickMessage('Quero agendar')" class="bg-purple-100 text-purple-700 px-3 py-2 rounded-xl text-sm hover:bg-purple-200 transition-colors font-medium">
+                        📅 Agendar
+                    </button>
+                    <div class="relative">
+                        <button onclick="toggleProceduresDropdown()" class="w-full bg-pink-100 text-pink-700 px-3 py-2 rounded-xl text-sm hover:bg-pink-200 transition-colors flex items-center justify-between font-medium">
+                            💆‍♀️ Procedimentos
+                            <i class="fas fa-chevron-up text-xs" id="dropdownIcon"></i>
+                        </button>
+                    </div>
+                    <button onclick="sendQuickMessage('Preços')" class="bg-green-100 text-green-700 px-3 py-2 rounded-xl text-sm hover:bg-green-200 transition-colors font-medium">
+                        💰 Preços
+                    </button>
+                    <button onclick="sendQuickMessage('Localização')" class="bg-blue-100 text-blue-700 px-3 py-2 rounded-xl text-sm hover:bg-blue-200 transition-colors font-medium">
+                        📍 Localização
+                    </button>
+                </div>
+
+                <!-- Message Input -->
+                <div class="flex space-x-3">
+                    <input type="text" id="chatInput" placeholder="Digite sua mensagem..." class="flex-1 p-4 border border-gray-300 rounded-2xl focus:ring-2 focus:ring-purple-500 focus:border-transparent text-lg">
+                    <button onclick="sendMessage()" class="gradient-bg text-white px-8 py-4 rounded-2xl hover:opacity-90 transition-all transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-paper-plane text-lg"></i>
+                    </button>
+                </div>
+                
+                <p class="text-xs text-gray-500 text-center mt-3">
+                    <i class="fas fa-shield-alt mr-1"></i>
+                    Suas informações são seguras e protegidas
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center mt-8 text-gray-600">
+            <p class="text-sm">
+                <i class="fas fa-heart text-red-500 mr-1"></i>
+                Feito com carinho pela <span class="font-semibold" id="footerClinicName">Clínica Bella Estética</span>
+            </p>
+            <p class="text-xs mt-2 opacity-75">
+                Atendimento automatizado • Respostas em tempo real
+            </p>
+        </div>
+    </div>
+
+    <!-- Scheduling Modal -->
+    <div id="schedulingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-lg mx-4 max-h-screen overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-800">Agendar Procedimento</h3>
+                <button onclick="closeSchedulingModal()" class="text-gray-500 hover:text-gray-700 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Selected Procedure Info -->
+            <div id="selectedProcedureInfo" class="bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-2xl mb-6">
+                <!-- Procedure info will be loaded here -->
+            </div>
+            
+            <!-- Scheduling Form -->
+            <div class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Nome Completo *</label>
+                        <input type="text" id="clientName" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Digite seu nome completo">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Telefone *</label>
+                        <input type="tel" id="clientPhone" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="(11) 99999-9999">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Data Preferida *</label>
+                        <input type="date" id="appointmentDate" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Horário Preferido *</label>
+                        <select id="appointmentTime" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                            <option value="">Selecione um horário</option>
+                            <option value="08:00">08:00</option>
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="15:00">15:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="17:00">17:00</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Observações (opcional)</label>
+                    <textarea id="appointmentNotes" rows="3" class="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Alguma observação especial?"></textarea>
+                </div>
+                
+                <div class="bg-blue-50 p-6 rounded-2xl">
+                    <h4 class="font-semibold text-blue-800 mb-3 flex items-center">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        Informações Importantes:
+                    </h4>
+                    <ul class="text-sm text-blue-700 space-y-2">
+                        <li class="flex items-start">
+                            <i class="fas fa-clock mr-2 mt-1 text-xs"></i>
+                            Chegue 15 minutos antes do horário agendado
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-id-card mr-2 mt-1 text-xs"></i>
+                            Traga um documento com foto
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-calendar-times mr-2 mt-1 text-xs"></i>
+                            Para cancelar, avise com 24h de antecedência
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="flex space-x-4 pt-4">
+                    <button onclick="confirmScheduling()" class="flex-1 bg-gradient-to-r from-green-500 to-teal-600 text-white py-4 rounded-xl hover:from-green-600 hover:to-teal-700 transition-all font-semibold text-lg transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-calendar-check mr-2"></i>Confirmar Agendamento
+                    </button>
+                    <button onclick="closeSchedulingModal()" class="flex-1 bg-gray-300 text-gray-700 py-4 rounded-xl hover:bg-gray-400 transition-colors font-semibold">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md mx-4 text-center">
+            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 floating-animation">
+                <i class="fas fa-check text-green-600 text-3xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-4">Sucesso!</h3>
+            <p id="successMessage" class="text-gray-600 mb-6 leading-relaxed">Operação realizada com sucesso!</p>
+            <button onclick="closeSuccessModal()" class="bg-gradient-to-r from-green-500 to-teal-600 text-white px-8 py-3 rounded-xl hover:from-green-600 hover:to-teal-700 transition-all font-semibold transform hover:scale-105 shadow-lg">
+                Perfeito!
+            </button>
+        </div>
+    </div>
+
+    <!-- Sharing Options Modal -->
+    <div id="sharingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-3xl p-8 w-full max-w-md mx-4">
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 floating-animation">
+                    <i class="fas fa-share-alt text-blue-600 text-3xl"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Compartilhar Agendamento</h3>
+                <p class="text-gray-600">Escolha como deseja salvar ou compartilhar os dados do seu agendamento</p>
+            </div>
+            
+            <div class="space-y-4">
+                <button onclick="shareToClientWhatsApp()" class="w-full flex items-center justify-center space-x-4 p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg">
+                    <i class="fab fa-whatsapp text-2xl"></i>
+                    <div class="text-left">
+                        <div class="font-semibold">Enviar por WhatsApp</div>
+                        <div class="text-sm opacity-90">Compartilhe seu agendamento</div>
+                    </div>
+                </button>
+                
+                <button onclick="copyAppointmentData()" class="w-full flex items-center justify-center space-x-4 p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-copy text-2xl"></i>
+                    <div class="text-left">
+                        <div class="font-semibold">Copiar Dados</div>
+                        <div class="text-sm opacity-90">Para área de transferência</div>
+                    </div>
+                </button>
+                
+                <button onclick="downloadAppointmentPDF()" class="w-full flex items-center justify-center space-x-4 p-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-xl hover:from-purple-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-download text-2xl"></i>
+                    <div class="text-left">
+                        <div class="font-semibold">Baixar Comprovante</div>
+                        <div class="text-sm opacity-90">Arquivo de texto</div>
+                    </div>
+                </button>
+                
+                <button onclick="shareToSocialMedia()" class="w-full flex items-center justify-center space-x-4 p-4 bg-gradient-to-r from-pink-500 to-pink-600 text-white rounded-xl hover:from-pink-600 hover:to-pink-700 transition-all transform hover:scale-105 shadow-lg">
+                    <i class="fas fa-share text-2xl"></i>
+                    <div class="text-left">
+                        <div class="font-semibold">Redes Sociais</div>
+                        <div class="text-sm opacity-90">Instagram, Facebook, etc.</div>
+                    </div>
+                </button>
+            </div>
+            
+            <div class="mt-6 text-center">
+                <button onclick="closeSharingModal()" class="text-gray-500 hover:text-gray-700 transition-colors font-medium">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/shared-data.js"></script>
+    <script src="js/client.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97946caa21d66485',t:'MTc1Njg5Mzg4Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
