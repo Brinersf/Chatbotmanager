@@ -1,988 +1,1081 @@
-Vou criar o arquivo 5 - js/client.js, o último arquivo do sistema:
-
-Este é o 
-arquivo 5 - js/client.js
- - o último arquivo! 🎉
-
-Características do JavaScript:
-
-✅ 
-Chat interativo
- - Mensagens em tempo real
-✅ 
-Sistema de agendamento
- - Formulário completo funcional
-✅ 
-Compartilhamento
- - WhatsApp, cópia, download
-✅ 
-Validações
- - Campos obrigatórios e formatos
-✅ 
-Animações
- - Efeitos visuais suaves
-✅ 
-Responsivo
- - Funciona em mobile e desktop
-✅ 
-Integração completa
- - Conecta com shared-data.js
-
-Para salvar no Bloco de Notas:
-
-Nome do arquivo: 
-client.js
-Tipo: "Todos os arquivos (
-.
-)"
-🎊 
-SISTEMA COMPLETO!
-
-Todos os 5 arquivos criados:
-
-✅ Arquivo 1: index.html
-✅ Arquivo 2: admin.html
-✅ Arquivo 3: css/styles.css
-✅ Arquivo 4: js/shared-data.js
-✅ Arquivo 5: js/client.js
-Agora é só organizar as pastas e testar!
- 🚀
-
 // ====================================
-// CLIENT-SIDE CHATBOT FUNCTIONALITY
-// Sistema de chat interativo para clientes
+// SISTEMA PRINCIPAL - CLÍNICA BELLA ESTÉTICA
+// Funcionalidades do Cliente e Interface
 // ====================================
 
-// Variáveis globais
-let currentProcedureId = null;
-let chatHistory = [];
-let isTyping = false;
-
-// ====================================
-// INICIALIZAÇÃO
-// ====================================
-document.addEventListener('DOMContentLoaded', function() {
-    initializeChat();
-    loadClinicData();
-    setupEventListeners();
-    displayWelcomeMessage();
+/**
+ * ClientSystem - Sistema principal de funcionalidades
+ */
+const ClientSystem = {
     
-    console.log('✅ Sistema do cliente inicializado com sucesso!');
-});
+    // ====================================
+    // VARIÁVEIS DE ESTADO
+    // ====================================
+    currentProcedure: null,
+    chatInitialized: false,
+    typingTimeout: null,
+    lastMessageTime: 0,
+    
+    // ====================================
+    // INICIALIZAÇÃO DO SISTEMA
+    // ====================================
+    
+    /**
+     * Inicializa todo o sistema
+     */
+    init: function() {
+        this.setupEventListeners();
+        this.initializeChat();
+        this.loadProcedures();
+        this.setupDateRestrictions();
+        this.setupPhoneFormatting();
+        console.log('🚀 ClientSystem inicializado com sucesso!');
+    },
 
-// ====================================
-// CONFIGURAÇÃO INICIAL
-// ====================================
-function initializeChat() {
-    // Configurar data mínima para agendamento (hoje)
-    const today = new Date().toISOString().split('T')[0];
-    const dateInput = document.getElementById('appointmentDate');
-    if (dateInput) {
-        dateInput.min = today;
-        
-        // Data máxima (30 dias à frente)
-        const maxDate = new Date();
-        maxDate.setDate(maxDate.getDate() + 30);
-        dateInput.max = maxDate.toISOString().split('T')[0];
-    }
-    
-    // Configurar máscara de telefone
-    const phoneInput = document.getElementById('clientPhone');
-    if (phoneInput) {
-        phoneInput.addEventListener('input', formatPhoneNumber);
-    }
-    
-    // Configurar Enter para enviar mensagem
-    const chatInput = document.getElementById('chatInput');
-    if (chatInput) {
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendMessage();
+    /**
+     * Configura todos os event listeners
+     */
+    setupEventListeners: function() {
+        // Enter no chat
+        const chatInput = document.getElementById('chatInput');
+        if (chatInput) {
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    this.sendMessage();
+                }
+            });
+        }
+
+        // Fechar dropdowns ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#proceduresDropdown') && 
+                !e.target.closest('button[onclick="toggleProceduresDropdown()"]')) {
+                this.closeProceduresDropdown();
             }
         });
-    }
-}
 
-function loadClinicData() {
-    try {
-        const clinicData = DataManager.getClinicData();
-        
-        // Atualizar nome da clínica
-        const clinicNameElements = document.querySelectorAll('#clinicName, #footerClinicName');
-        clinicNameElements.forEach(element => {
-            if (element) element.textContent = clinicData.name;
+        // Escape para fechar modais
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeAllModals();
+            }
         });
-        
-        // Atualizar título da página
-        document.title = `${clinicData.name} - Atendimento Online`;
-        
-    } catch (error) {
-        console.error('Erro ao carregar dados da clínica:', error);
-    }
-}
+    },
 
-function setupEventListeners() {
-    // Fechar dropdown ao clicar fora
-    document.addEventListener('click', function(e) {
-        const dropdown = document.getElementById('proceduresDropdown');
-        const button = e.target.closest('button');
-        
-        if (dropdown && !dropdown.contains(e.target) && 
-            (!button || !button.onclick || !button.onclick.toString().includes('toggleProceduresDropdown'))) {
-            dropdown.classList.add('hidden');
-            updateDropdownIcon(false);
+    /**
+     * Configura restrições de data
+     */
+    setupDateRestrictions: function() {
+        const dateInput = document.getElementById('appointmentDate');
+        if (dateInput) {
+            // Data mínima: hoje
+            const today = new Date().toISOString().split('T')[0];
+            dateInput.min = today;
+            
+            // Data máxima: 30 dias à frente
+            const maxDate = new Date();
+            maxDate.setDate(maxDate.getDate() + DataManager.systemConfig.bookingAdvanceDays);
+            dateInput.max = maxDate.toISOString().split('T')[0];
+            
+            // Validar ao mudar data
+            dateInput.addEventListener('change', (e) => {
+                this.validateSelectedDate(e.target.value);
+            });
         }
-    });
-    
-    // Fechar modais com ESC
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            closeAllModals();
+    },
+
+    /**
+     * Configura formatação automática de telefone
+     */
+    setupPhoneFormatting: function() {
+        const phoneInput = document.getElementById('clientPhone');
+        if (phoneInput) {
+            phoneInput.addEventListener('input', (e) => {
+                e.target.value = DataManager.formatPhoneNumber(e.target.value);
+            });
         }
-    });
-}
+    },
 
-// ====================================
-// SISTEMA DE MENSAGENS
-// ====================================
-function displayWelcomeMessage() {
-    const messages = DataManager.getMessages();
-    addBotMessage(messages.welcome);
-}
-
-function addBotMessage(text, delay = 1000) {
-    if (isTyping) return;
+    // ====================================
+    // SISTEMA DE CHAT
+    // ====================================
     
-    showTypingIndicator();
-    
-    setTimeout(() => {
-        hideTypingIndicator();
+    /**
+     * Inicializa o chat com mensagem de boas-vindas
+     */
+    initializeChat: function() {
+        if (this.chatInitialized) return;
         
+        setTimeout(() => {
+            this.addBotMessage(DataManager.messages.welcome);
+            this.addBotMessage("Como posso ajudá-lo hoje? Você pode:");
+            this.addBotMessage("• Ver nossos procedimentos\n• Agendar um atendimento\n• Tirar dúvidas sobre tratamentos\n• Obter informações de contato");
+        }, 1000);
+        
+        this.chatInitialized = true;
+    },
+
+    /**
+     * Envia mensagem do usuário
+     */
+    sendMessage: function() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        
+        if (!message) return;
+        
+        this.addUserMessage(message);
+        input.value = '';
+        
+        // Simular digitação do bot
+        this.showTypingIndicator();
+        
+        setTimeout(() => {
+            this.hideTypingIndicator();
+            this.processUserMessage(message);
+        }, 1500 + Math.random() * 1000);
+    },
+
+    /**
+     * Envia mensagem rápida
+     */
+    sendQuickMessage: function(message) {
+        this.addUserMessage(message);
+        
+        this.showTypingIndicator();
+        setTimeout(() => {
+            this.hideTypingIndicator();
+            this.processUserMessage(message);
+        }, 1000);
+    },
+
+    /**
+     * Adiciona mensagem do usuário ao chat
+     */
+    addUserMessage: function(message) {
         const chatMessages = document.getElementById('chatMessages');
-        if (!chatMessages) return;
-        
         const messageDiv = document.createElement('div');
-        messageDiv.className = 'message bot fade-in';
+        messageDiv.className = 'flex justify-end message-enter';
         
         messageDiv.innerHTML = `
-            <div class="message-avatar">
-                <i class="fas fa-robot"></i>
-            </div>
-            <div class="message-content">
-                ${formatMessage(text)}
+            <div class="user-message">
+                <div>${this.escapeHtml(message)}</div>
+                <span class="message-timestamp">${this.getCurrentTime()}</span>
             </div>
         `;
         
         chatMessages.appendChild(messageDiv);
-        scrollToBottom();
+        this.scrollToBottom();
+    },
+
+    /**
+     * Adiciona mensagem do bot ao chat
+     */
+    addBotMessage: function(message) {
+        const chatMessages = document.getElementById('chatMessages');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'flex justify-start message-enter';
         
-        // Adicionar ao histórico
-        chatHistory.push({
-            type: 'bot',
-            message: text,
-            timestamp: new Date().toISOString()
-        });
-        
-    }, delay);
-}
-
-function addUserMessage(text) {
-    const chatMessages = document.getElementById('chatMessages');
-    if (!chatMessages) return;
-    
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'message user slide-in-right';
-    
-    messageDiv.innerHTML = `
-        <div class="message-content">
-            ${formatMessage(text)}
-        </div>
-        <div class="message-avatar">
-            <i class="fas fa-user"></i>
-        </div>
-    `;
-    
-    chatMessages.appendChild(messageDiv);
-    scrollToBottom();
-    
-    // Adicionar ao histórico
-    chatHistory.push({
-        type: 'user',
-        message: text,
-        timestamp: new Date().toISOString()
-    });
-}
-
-function formatMessage(text) {
-    // Converter quebras de linha
-    text = text.replace(/\n/g, '<br>');
-    
-    // Converter markdown básico
-    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    
-    // Converter links
-    text = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" class="text-blue-600 hover:underline">$1</a>');
-    
-    return text;
-}
-
-function showTypingIndicator() {
-    if (isTyping) return;
-    isTyping = true;
-    
-    const chatMessages = document.getElementById('chatMessages');
-    if (!chatMessages) return;
-    
-    const typingDiv = document.createElement('div');
-    typingDiv.id = 'typingIndicator';
-    typingDiv.className = 'typing-indicator fade-in';
-    
-    typingDiv.innerHTML = `
-        <div class="message-avatar">
-            <i class="fas fa-robot"></i>
-        </div>
-        <div class="bg-gray-200 rounded-2xl px-4 py-3 flex items-center">
-            <span class="text-gray-600 mr-2">Digitando</span>
-            <div class="loading-dots">
-                <div class="loading-dot"></div>
-                <div class="loading-dot"></div>
-                <div class="loading-dot"></div>
-            </div>
-        </div>
-    `;
-    
-    chatMessages.appendChild(typingDiv);
-    scrollToBottom();
-}
-
-function hideTypingIndicator() {
-    const typingIndicator = document.getElementById('typingIndicator');
-    if (typingIndicator) {
-        typingIndicator.remove();
-    }
-    isTyping = false;
-}
-
-function scrollToBottom() {
-    const chatMessages = document.getElementById('chatMessages');
-    if (chatMessages) {
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-}
-
-// ====================================
-// ENVIO DE MENSAGENS
-// ====================================
-function sendMessage() {
-    const input = document.getElementById('chatInput');
-    if (!input) return;
-    
-    const message = input.value.trim();
-    if (!message) return;
-    
-    // Adicionar mensagem do usuário
-    addUserMessage(message);
-    
-    // Limpar input
-    input.value = '';
-    
-    // Processar resposta
-    processUserMessage(message);
-}
-
-function sendQuickMessage(message) {
-    addUserMessage(message);
-    processUserMessage(message);
-}
-
-function processUserMessage(message) {
-    const lowerMessage = message.toLowerCase();
-    const messages = DataManager.getMessages();
-    
-    // Detectar intenção da mensagem
-    if (lowerMessage.includes('agendar') || lowerMessage.includes('marcar')) {
-        addBotMessage("Perfeito! Vou te ajudar a agendar um procedimento. 📅\n\nPrimeiro, escolha o procedimento que deseja:");
-        setTimeout(() => showProceduresForScheduling(), 1500);
-        
-    } else if (lowerMessage.includes('procedimento') || lowerMessage.includes('tratamento')) {
-        addBotMessage(messages.procedures);
-        setTimeout(() => loadProceduresList(), 1500);
-        
-    } else if (lowerMessage.includes('preço') || lowerMessage.includes('valor') || lowerMessage.includes('custo')) {
-        addBotMessage(messages.prices);
-        
-    } else if (lowerMessage.includes('localização') || lowerMessage.includes('endereço') || lowerMessage.includes('onde')) {
-        addBotMessage(messages.location);
-        
-    } else if (lowerMessage.includes('horário') || lowerMessage.includes('funcionamento')) {
-        addBotMessage(messages.hours);
-        
-    } else if (lowerMessage.includes('contato') || lowerMessage.includes('telefone') || lowerMessage.includes('whatsapp')) {
-        addBotMessage(messages.contact);
-        
-    } else if (lowerMessage.includes('olá') || lowerMessage.includes('oi') || lowerMessage.includes('bom dia') || 
-               lowerMessage.includes('boa tarde') || lowerMessage.includes('boa noite')) {
-        addBotMessage("Olá! 😊 Que bom te ver aqui! Como posso ajudá-lo hoje?");
-        
-    } else if (lowerMessage.includes('obrigad') || lowerMessage.includes('valeu') || lowerMessage.includes('brigad')) {
-        addBotMessage("Por nada! 💜 Fico feliz em ajudar! Se precisar de mais alguma coisa, é só falar!");
-        
-    } else {
-        // Resposta padrão para mensagens não reconhecidas
-        addBotMessage(messages.error);
-    }
-}
-
-// ====================================
-// SISTEMA DE PROCEDIMENTOS
-// ====================================
-function toggleProceduresDropdown() {
-    const dropdown = document.getElementById('proceduresDropdown');
-    if (!dropdown) return;
-    
-    const isHidden = dropdown.classList.contains('hidden');
-    
-    if (isHidden) {
-        loadProceduresList();
-        dropdown.classList.remove('hidden');
-        updateDropdownIcon(true);
-    } else {
-        dropdown.classList.add('hidden');
-        updateDropdownIcon(false);
-    }
-}
-
-function updateDropdownIcon(isOpen) {
-    const icon = document.getElementById('dropdownIcon');
-    if (icon) {
-        icon.className = isOpen ? 'fas fa-chevron-down text-xs' : 'fas fa-chevron-up text-xs';
-    }
-}
-
-function loadProceduresList() {
-    const proceduresList = document.getElementById('proceduresList');
-    if (!proceduresList) return;
-    
-    const procedures = DataManager.getProcedures();
-    
-    proceduresList.innerHTML = procedures.map(procedure => `
-        <div class="procedure-item p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-all"
-             onclick="showProcedureDetails(${procedure.id})">
-            <div class="flex items-center">
-                <div class="text-3xl mr-4">${procedure.icon}</div>
-                <div class="flex-1">
-                    <div class="procedure-name font-semibold text-gray-800">${procedure.name}</div>
-                    <div class="procedure-description text-sm text-gray-600 mb-2">${procedure.description}</div>
-                    <div class="flex items-center justify-between">
-                        <div class="procedure-price text-green-600 font-bold">
-                            R$ ${procedure.price.toFixed(2).replace('.', ',')}
-                        </div>
-                        <div class="procedure-duration text-xs text-gray-500">
-                            ${procedure.duration} min
-                        </div>
-                    </div>
-                </div>
-                <div class="ml-4">
-                    <i class="fas fa-chevron-right text-gray-400"></i>
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
-
-function showProceduresForScheduling() {
-    const procedures = DataManager.getProcedures();
-    
-    let proceduresText = "💆‍♀️ **Escolha seu procedimento:**\n\n";
-    
-    procedures.forEach((procedure, index) => {
-        proceduresText += `${procedure.icon} **${procedure.name}**\n`;
-        proceduresText += `💰 R$ ${procedure.price.toFixed(2).replace('.', ',')}\n`;
-        proceduresText += `⏱️ ${procedure.duration} minutos\n\n`;
-    });
-    
-    proceduresText += "Clique em 'Ver procedimentos' para mais detalhes ou me diga qual procedimento te interessa! 😊";
-    
-    addBotMessage(proceduresText);
-}
-
-function showProcedureDetails(procedureId) {
-    const procedure = DataManager.getProcedureById(procedureId);
-    if (!procedure) return;
-    
-    // Fechar dropdown
-    const dropdown = document.getElementById('proceduresDropdown');
-    if (dropdown) {
-        dropdown.classList.add('hidden');
-        updateDropdownIcon(false);
-    }
-    
-    // Mostrar detalhes no chat
-    let detailsText = `${procedure.icon} **${procedure.name}**\n\n`;
-    detailsText += `📝 **Descrição:**\n${procedure.description}\n\n`;
-    detailsText += `💰 **Preço:** R$ ${procedure.price.toFixed(2).replace('.', ',')}\n`;
-    detailsText += `⏱️ **Duração:** ${procedure.duration} minutos\n\n`;
-    
-    if (procedure.benefits && procedure.benefits.length > 0) {
-        detailsText += `✨ **Benefícios:**\n`;
-        procedure.benefits.forEach(benefit => {
-            detailsText += `• ${benefit}\n`;
-        });
-        detailsText += '\n';
-    }
-    
-    detailsText += `Gostaria de agendar este procedimento? 😊`;
-    
-    addBotMessage(detailsText);
-    
-    // Oferecer agendamento após 2 segundos
-    setTimeout(() => {
-        addBotMessage(`Quer agendar o **${procedure.name}**? Clique no botão "Agendar" ou me diga "quero agendar"! 📅`);
-        currentProcedureId = procedureId;
-    }, 2000);
-}
-
-// ====================================
-// SISTEMA DE AGENDAMENTO
-// ====================================
-function openSchedulingModal(procedureId = null) {
-    const modal = document.getElementById('schedulingModal');
-    if (!modal) return;
-    
-    // Se não foi passado um procedureId, usar o atual ou pedir para escolher
-    if (!procedureId && !currentProcedureId) {
-        addBotMessage("Primeiro, preciso saber qual procedimento você deseja agendar. Clique em 'Ver procedimentos' para escolher! 😊");
-        return;
-    }
-    
-    const selectedProcedureId = procedureId || currentProcedureId;
-    const procedure = DataManager.getProcedureById(selectedProcedureId);
-    
-    if (!procedure) {
-        addBotMessage("Ops! Não consegui encontrar esse procedimento. Pode escolher novamente? 😅");
-        return;
-    }
-    
-    // Atualizar informações do procedimento selecionado
-    updateSelectedProcedureInfo(procedure);
-    
-    // Mostrar modal
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
-    
-    // Focar no primeiro campo
-    setTimeout(() => {
-        const nameInput = document.getElementById('clientName');
-        if (nameInput) nameInput.focus();
-    }, 300);
-}
-
-function updateSelectedProcedureInfo(procedure) {
-    const infoDiv = document.getElementById('selectedProcedureInfo');
-    if (!infoDiv) return;
-    
-    infoDiv.innerHTML = `
-        <div class="flex items-center mb-4">
-            <div class="text-4xl mr-4">${procedure.icon}</div>
-            <div>
-                <h4 class="text-xl font-bold text-gray-800">${procedure.name}</h4>
-                <p class="text-gray-600">${procedure.description}</p>
-            </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4 text-sm">
-            <div class="bg-white p-3 rounded-xl">
-                <div class="text-gray-500 text-xs">Preço</div>
-                <div class="font-bold text-green-600 text-lg">R$ ${procedure.price.toFixed(2).replace('.', ',')}</div>
-            </div>
-            <div class="bg-white p-3 rounded-xl">
-                <div class="text-gray-500 text-xs">Duração</div>
-                <div class="font-bold text-blue-600 text-lg">${procedure.duration} min</div>
-            </div>
-        </div>
-    `;
-}
-
-function closeSchedulingModal() {
-    const modal = document.getElementById('schedulingModal');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        
-        // Limpar formulário
-        clearSchedulingForm();
-    }
-}
-
-function clearSchedulingForm() {
-    const form = document.querySelector('#schedulingModal form') || document.getElementById('schedulingModal');
-    if (form) {
-        const inputs = form.querySelectorAll('input, select, textarea');
-        inputs.forEach(input => {
-            if (input.type === 'checkbox' || input.type === 'radio') {
-                input.checked = false;
-            } else {
-                input.value = '';
-            }
-        });
-    }
-}
-
-function confirmScheduling() {
-    // Validar formulário
-    const validation = validateSchedulingForm();
-    if (!validation.isValid) {
-        showValidationErrors(validation.errors);
-        return;
-    }
-    
-    // Coletar dados do formulário
-    const appointmentData = collectAppointmentData();
-    
-    // Salvar agendamento
-    const savedAppointment = DataManager.addAppointment(appointmentData);
-    
-    if (savedAppointment) {
-        // Fechar modal de agendamento
-        closeSchedulingModal();
-        
-        // Mostrar modal de sucesso
-        showSuccessModal(savedAppointment);
-        
-        // Adicionar mensagem no chat
-        const messages = DataManager.getMessages();
-        addBotMessage(messages.confirmation);
-        
-        // Limpar procedimento atual
-        currentProcedureId = null;
-        
-    } else {
-        showError('Erro ao salvar agendamento. Tente novamente.');
-    }
-}
-
-function validateSchedulingForm() {
-    const errors = [];
-    
-    // Nome
-    const name = document.getElementById('clientName')?.value.trim();
-    if (!name) {
-        errors.push('Nome é obrigatório');
-    } else if (name.length < 2) {
-        errors.push('Nome deve ter pelo menos 2 caracteres');
-    }
-    
-    // Telefone
-    const phone = document.getElementById('clientPhone')?.value.trim();
-    if (!phone) {
-        errors.push('Telefone é obrigatório');
-    } else if (phone.replace(/\D/g, '').length < 10) {
-        errors.push('Telefone deve ter pelo menos 10 dígitos');
-    }
-    
-    // Data
-    const date = document.getElementById('appointmentDate')?.value;
-    if (!date) {
-        errors.push('Data é obrigatória');
-    } else {
-        const selectedDate = new Date(date);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        if (selectedDate < today) {
-            errors.push('Data não pode ser no passado');
-        }
-    }
-    
-    // Horário
-    const time = document.getElementById('appointmentTime')?.value;
-    if (!time) {
-        errors.push('Horário é obrigatório');
-    }
-    
-    return {
-        isValid: errors.length === 0,
-        errors: errors
-    };
-}
-
-function showValidationErrors(errors) {
-    const errorText = errors.join('\n• ');
-    showError(`Por favor, corrija os seguintes erros:\n\n• ${errorText}`);
-    
-    // Destacar campos com erro
-    errors.forEach(error => {
-        if (error.includes('Nome')) {
-            highlightField('clientName');
-        } else if (error.includes('Telefone')) {
-            highlightField('clientPhone');
-        } else if (error.includes('Data')) {
-            highlightField('appointmentDate');
-        } else if (error.includes('Horário')) {
-            highlightField('appointmentTime');
-        }
-    });
-}
-
-function highlightField(fieldId) {
-    const field = document.getElementById(fieldId);
-    if (field) {
-        field.classList.add('border-red-500', 'shake');
-        setTimeout(() => {
-            field.classList.remove('border-red-500', 'shake');
-        }, 3000);
-    }
-}
-
-function collectAppointmentData() {
-    const procedure = DataManager.getProcedureById(currentProcedureId);
-    
-    return {
-        clientName: document.getElementById('clientName')?.value.trim(),
-        clientPhone: document.getElementById('clientPhone')?.value.trim(),
-        procedure: procedure?.name || 'Procedimento',
-        procedureId: currentProcedureId,
-        procedureIcon: procedure?.icon || '✨',
-        date: document.getElementById('appointmentDate')?.value,
-        time: document.getElementById('appointmentTime')?.value,
-        duration: procedure?.duration || 60,
-        price: procedure?.price || 0,
-        notes: document.getElementById('appointmentNotes')?.value.trim() || ''
-    };
-}
-
-// ====================================
-// SISTEMA DE SUCESSO E COMPARTILHAMENTO
-// ====================================
-function showSuccessModal(appointment) {
-    const modal = document.getElementById('successModal');
-    const messageElement = document.getElementById('successMessage');
-    
-    if (modal && messageElement) {
-        const formattedDate = formatDate(appointment.date);
-        const formattedTime = appointment.time;
-        
-        messageElement.innerHTML = `
-            <strong>Agendamento realizado com sucesso!</strong><br><br>
-            
-            <div class="text-left bg-gray-50 p-4 rounded-xl mt-4">
-                <div class="flex items-center mb-2">
-                    <span class="text-2xl mr-2">${appointment.procedureIcon}</span>
-                    <strong>${appointment.procedure}</strong>
-                </div>
-                <div class="text-sm text-gray-600 space-y-1">
-                    <div><strong>Data:</strong> ${formattedDate}</div>
-                    <div><strong>Horário:</strong> ${formattedTime}</div>
-                    <div><strong>Cliente:</strong> ${appointment.clientName}</div>
-                    <div><strong>Telefone:</strong> ${appointment.clientPhone}</div>
-                </div>
-            </div>
-            
-            <div class="mt-4 text-sm text-gray-600">
-                Entraremos em contato em breve para confirmar!<br>
-                Gostaria de compartilhar os dados do agendamento?
+        messageDiv.innerHTML = `
+            <div class="bot-message">
+                <div>${this.formatBotMessage(message)}</div>
+                <span class="message-timestamp">${this.getCurrentTime()}</span>
             </div>
         `;
         
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
+        chatMessages.appendChild(messageDiv);
+        this.scrollToBottom();
+    },
+
+    /**
+     * Processa mensagem do usuário e gera resposta
+     */
+    processUserMessage: function(message) {
+        const lowerMessage = message.toLowerCase();
         
-        // Salvar dados do agendamento para compartilhamento
-        window.currentAppointment = appointment;
-    }
-}
-
-function closeSuccessModal() {
-    const modal = document.getElementById('successModal');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        
-        // Mostrar opções de compartilhamento
-        setTimeout(() => {
-            if (window.currentAppointment) {
-                showSharingModal();
-            }
-        }, 500);
-    }
-}
-
-function showSharingModal() {
-    const modal = document.getElementById('sharingModal');
-    if (modal) {
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-    }
-}
-
-function closeSharingModal() {
-    const modal = document.getElementById('sharingModal');
-    if (modal) {
-        modal.classList.add('hidden');
-        modal.classList.remove('flex');
-        window.currentAppointment = null;
-    }
-}
-
-// ====================================
-// FUNÇÕES DE COMPARTILHAMENTO
-// ====================================
-function shareToClientWhatsApp() {
-    if (!window.currentAppointment) return;
-    
-    const appointment = window.currentAppointment;
-    const clinicData = DataManager.getClinicData();
-    
-    const message = `🎉 *Agendamento Confirmado!*
-
-${appointment.procedureIcon} *${appointment.procedure}*
-
-📅 *Data:* ${formatDate(appointment.date)}
-🕐 *Horário:* ${appointment.time}
-👤 *Cliente:* ${appointment.clientName}
-📱 *Telefone:* ${appointment.clientPhone}
-💰 *Valor:* R$ ${appointment.price.toFixed(2).replace('.', ',')}
-
-🏢 *${clinicData.name}*
-📍 ${clinicData.address}
-📞 ${clinicData.phone}
-
-✨ Obrigado por escolher nossos serviços!`;
-
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-    
-    closeSharingModal();
-}
-
-function copyAppointmentData() {
-    if (!window.currentAppointment) return;
-    
-    const appointment = window.currentAppointment;
-    const clinicData = DataManager.getClinicData();
-    
-    const text = `AGENDAMENTO CONFIRMADO
-
-Procedimento: ${appointment.procedure}
-Data: ${formatDate(appointment.date)}
-Horário: ${appointment.time}
-Cliente: ${appointment.clientName}
-Telefone: ${appointment.clientPhone}
-Valor: R$ ${appointment.price.toFixed(2).replace('.', ',')}
-
-Clínica: ${clinicData.name}
-Endereço: ${clinicData.address}
-Telefone: ${clinicData.phone}
-
-Agendado em: ${formatDateTime(new Date())}`;
-
-    navigator.clipboard.writeText(text).then(() => {
-        showSuccess('Dados copiados para a área de transferência!');
-        closeSharingModal();
-    }).catch(() => {
-        showError('Erro ao copiar dados. Tente novamente.');
-    });
-}
-
-function downloadAppointmentPDF() {
-    if (!window.currentAppointment) return;
-    
-    const appointment = window.currentAppointment;
-    const clinicData = DataManager.getClinicData();
-    
-    const content = `COMPROVANTE DE AGENDAMENTO
-
-${clinicData.name}
-${clinicData.address}
-Telefone: ${clinicData.phone}
-Email: ${clinicData.email}
-
-========================================
-
-DADOS DO AGENDAMENTO
-
-Procedimento: ${appointment.procedure}
-Data: ${formatDate(appointment.date)}
-Horário: ${appointment.time}
-Duração: ${appointment.duration} minutos
-Valor: R$ ${appointment.price.toFixed(2).replace('.', ',')}
-
-DADOS DO CLIENTE
-
-Nome: ${appointment.clientName}
-Telefone: ${appointment.clientPhone}
-
-OBSERVAÇÕES
-
-${appointment.notes || 'Nenhuma observação especial.'}
-
-========================================
-
-IMPORTANTE:
-- Chegue 15 minutos antes do horário
-- Traga um documento com foto
-- Para cancelar, avise com 24h de antecedência
-
-Agendamento realizado em: ${formatDateTime(new Date())}
-ID do Agendamento: ${appointment.id}
-
-Obrigado por escolher nossos serviços!`;
-
-    // Criar e baixar arquivo
-    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `agendamento_${appointment.id}_${appointment.date.replace(/-/g, '')}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    
-    showSuccess('Comprovante baixado com sucesso!');
-    closeSharingModal();
-}
-
-function shareToSocialMedia() {
-    if (!window.currentAppointment) return;
-    
-    const appointment = window.currentAppointment;
-    const clinicData = DataManager.getClinicData();
-    
-    const message = `Acabei de agendar meu ${appointment.procedure} na ${clinicData.name}! 💆‍♀️✨ 
-
-Data: ${formatDate(appointment.date)} às ${appointment.time}
-
-#beleza #estetica #autocuidado`;
-
-    // Tentar usar Web Share API se disponível
-    if (navigator.share) {
-        navigator.share({
-            title: 'Agendamento Confirmado',
-            text: message,
-            url: clinicData.website || window.location.href
-        }).then(() => {
-            closeSharingModal();
-        }).catch(console.error);
-    } else {
-        // Fallback: copiar para área de transferência
-        navigator.clipboard.writeText(message).then(() => {
-            showSuccess('Texto copiado! Cole em suas redes sociais.');
-            closeSharingModal();
-        }).catch(() => {
-            showError('Erro ao preparar compartilhamento.');
-        });
-    }
-}
-
-// ====================================
-// UTILITÁRIOS
-// ====================================
-function formatPhoneNumber(event) {
-    let value = event.target.value.replace(/\D/g, '');
-    
-    if (value.length <= 11) {
-        if (value.length <= 2) {
-            value = value.replace(/(\d{0,2})/, '($1');
-        } else if (value.length <= 7) {
-            value = value.replace(/(\d{2})(\d{0,5})/, '($1) $2');
-        } else {
-            value = value.replace(/(\d{2})(\d{5})(\d{0,4})/, '($1) $2-$3');
+        // Saudações
+        if (this.containsAny(lowerMessage, ['oi', 'olá', 'ola', 'bom dia', 'boa tarde', 'boa noite'])) {
+            this.addBotMessage("Olá! 😊 Seja muito bem-vindo à Clínica Bella Estética! Como posso ajudá-lo hoje?");
+            return;
         }
-    }
-    
-    event.target.value = value;
-}
+        
+        // Agendamento
+        if (this.containsAny(lowerMessage, ['agendar', 'agendamento', 'marcar', 'consulta', 'horário'])) {
+            this.addBotMessage("Perfeito! 📅 Vou ajudá-lo a agendar seu procedimento. Clique no botão 'Agendar' abaixo ou me diga qual procedimento te interessa!");
+            return;
+        }
+        
+        // Procedimentos
+        if (this.containsAny(lowerMessage, ['procedimento', 'tratamento', 'serviço', 'o que fazem', 'quais'])) {
+            this.handleProceduresInquiry();
+            return;
+        }
+        
+        // Preços
+        if (this.containsAny(lowerMessage, ['preço', 'valor', 'custa', 'quanto'])) {
+            this.handlePriceInquiry(lowerMessage);
+            return;
+        }
+        
+        // Localização
+        if (this.containsAny(lowerMessage, ['onde', 'endereço', 'localização', 'local'])) {
+            this.addBotMessage(`📍 Estamos localizados em:\n${DataManager.clinicData.address}\n${DataManager.clinicData.city}\nCEP: ${DataManager.clinicData.cep}`);
+            return;
+        }
+        
+        // Horários
+        if (this.containsAny(lowerMessage, ['horário', 'funcionamento', 'aberto', 'funciona'])) {
+            this.addBotMessage(`🕐 Nossos horários de funcionamento:\n${DataManager.clinicData.hours}`);
+            return;
+        }
+        
+        // Contato
+        if (this.containsAny(lowerMessage, ['contato', 'telefone', 'whatsapp', 'falar'])) {
+            this.handleContactInquiry();
+            return;
+        }
+        
+        // Busca por procedimento específico
+        const searchResults = DataManager.searchProcedures(message);
+        if (searchResults.length > 0 && searchResults.length < DataManager.procedures.length) {
+            this.handleSpecificProcedureSearch(searchResults);
+            return;
+        }
+        
+        // Resposta padrão
+        this.addBotMessage("Entendi! 🤔 Para melhor atendê-lo, você pode:\n\n• Usar os botões de ação rápida abaixo\n• Me perguntar sobre procedimentos específicos\n• Solicitar agendamento\n• Pedir informações de contato\n\nComo posso ajudá-lo?");
+    },
 
-function formatDate(dateString) {
-    const date = new Date(dateString + 'T00:00:00');
-    return date.toLocaleDateString('pt-BR', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-}
+    /**
+     * Trata consulta sobre procedimentos
+     */
+    handleProceduresInquiry: function() {
+        const categories = DataManager.getCategories();
+        let response = "✨ Oferecemos diversos procedimentos nas seguintes áreas:\n\n";
+        
+        categories.forEach(category => {
+            const procedures = DataManager.getProceduresByCategory(category);
+            response += `🔹 **${category}** (${procedures.length} procedimentos)\n`;
+        });
+        
+        response += "\nClique em 'Ver procedimentos' no menu acima para ver todos os detalhes! 📋";
+        this.addBotMessage(response);
+    },
 
-function formatDateTime(date) {
-    return date.toLocaleString('pt-BR', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
+    /**
+     * Trata consulta sobre preços
+     */
+    handlePriceInquiry: function(message) {
+        // Tentar encontrar procedimento específico na mensagem
+        const searchResults = DataManager.searchProcedures(message);
+        
+        if (searchResults.length === 1) {
+            const procedure = searchResults[0];
+            this.addBotMessage(`💰 O procedimento **${procedure.name}** custa ${procedure.price}.\n\nDuração: ${procedure.duration}\n\nGostaria de agendar ou saber mais detalhes?`);
+        } else if (searchResults.length > 1) {
+            let response = "💰 Encontrei alguns procedimentos relacionados:\n\n";
+            searchResults.slice(0, 5).forEach(proc => {
+                response += `• ${proc.name}: ${proc.price}\n`;
+            });
+            response += "\nQual procedimento específico te interessa?";
+            this.addBotMessage(response);
+        } else {
+            const stats = DataManager.getStats();
+            this.addBotMessage(`💰 Nossos preços variam conforme o procedimento:\n\nPreço médio: ${stats.averagePrice}\n\nPara valores específicos, me diga qual procedimento te interessa ou clique em 'Ver procedimentos' no menu! 📋`);
+        }
+    },
 
-function showSuccess(message) {
-    showNotification(message, 'success');
-}
+    /**
+     * Trata consulta sobre contato
+     */
+    handleContactInquiry: function() {
+        const clinic = DataManager.clinicData;
+        this.addBotMessage(`📞 Entre em contato conosco:\n\n• **Telefone/WhatsApp:** ${clinic.phone}\n• **Email:** ${clinic.email}\n• **Instagram:** ${clinic.socialMedia.instagram}\n• **Site:** ${clinic.website}\n\nEstamos sempre prontos para atendê-lo! 😊`);
+    },
 
-function showError(message) {
-    showNotification(message, 'error');
-}
+    /**
+     * Trata busca específica de procedimentos
+     */
+    handleSpecificProcedureSearch: function(results) {
+        if (results.length === 1) {
+            const procedure = results[0];
+            let response = `✨ **${procedure.name}**\n\n`;
+            response += `📝 ${procedure.description}\n`;
+            response += `💰 Preço: ${procedure.price}\n`;
+            response += `⏱️ Duração: ${procedure.duration}\n\n`;
+            response += `**Benefícios:**\n`;
+            procedure.benefits.slice(0, 3).forEach(benefit => {
+                response += `• ${benefit}\n`;
+            });
+            response += `\nGostaria de agendar este procedimento? 📅`;
+            this.addBotMessage(response);
+        } else {
+            let response = `Encontrei ${results.length} procedimentos relacionados:\n\n`;
+            results.slice(0, 4).forEach(proc => {
+                response += `🔹 **${proc.name}** - ${proc.price}\n   ${proc.description}\n\n`;
+            });
+            response += "Qual destes te interessa mais?";
+            this.addBotMessage(response);
+        }
+    },
 
-function showNotification(message, type = 'info') {
-    // Criar elemento de notificação
-    const notification = document.createElement('div');
-    notification.className = `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg max-w-sm transform translate-x-full transition-transform duration-300`;
+    /**
+     * Mostra indicador de digitação
+     */
+    showTypingIndicator: function() {
+        const chatMessages = document.getElementById('chatMessages');
+        const typingDiv = document.createElement('div');
+        typingDiv.id = 'typingIndicator';
+        typingDiv.className = 'flex justify-start';
+        
+        typingDiv.innerHTML = `
+            <div class="bg-gray-200 rounded-2xl rounded-tl-none p-4 max-w-md">
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        `;
+        
+        chatMessages.appendChild(typingDiv);
+        this.scrollToBottom();
+    },
+
+    /**
+     * Esconde indicador de digitação
+     */
+    hideTypingIndicator: function() {
+        const typingIndicator = document.getElementById('typingIndicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    },
+
+    // ====================================
+    // SISTEMA DE PROCEDIMENTOS
+    // ====================================
     
-    if (type === 'success') {
-        notification.classList.add('bg-green-500', 'text-white');
-        notification.innerHTML = `<i class="fas fa-check-circle mr-2"></i>${message}`;
-    } else if (type === 'error') {
-        notification.classList.add('bg-red-500', 'text-white');
-        notification.innerHTML = `<i class="fas fa-exclamation-circle mr-2"></i>${message}`;
-    } else {
-        notification.classList.add('bg-blue-500', 'text-white');
-        notification.innerHTML = `<i class="fas fa-info-circle mr-2"></i>${message}`;
-    }
+    /**
+     * Carrega lista de procedimentos
+     */
+    loadProcedures: function() {
+        const proceduresList = document.getElementById('proceduresList');
+        if (!proceduresList) return;
+        
+        let html = '';
+        const categories = DataManager.getCategories();
+        
+        categories.forEach(category => {
+            const procedures = DataManager.getProceduresByCategory(category);
+            
+            html += `
+                <div class="p-4 border-b border-gray-200 bg-gray-50">
+                    <h4 class="font-bold text-gray-800 text-sm uppercase tracking-wide">${category}</h4>
+                </div>
+            `;
+            
+            procedures.forEach(procedure => {
+                html += `
+                    <div class="procedure-card" onclick="ClientSystem.selectProcedure(${procedure.id})">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center flex-1">
+                                <i class="${procedure.icon} procedure-icon"></i>
+                                <div>
+                                    <div class="font-semibold text-gray-800">${procedure.name}</div>
+                                    <div class="text-sm text-gray-600">${procedure.description}</div>
+                                    <div class="text-xs text-gray-500 mt-1">⏱️ ${procedure.duration}</div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="procedure-price">${procedure.price}</div>
+                                <button class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-lg mt-1 hover:bg-purple-200 transition-all">
+                                    Ver detalhes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        });
+        
+        proceduresList.innerHTML = html;
+    },
+
+    /**
+     * Seleciona um procedimento
+     */
+    selectProcedure: function(procedureId) {
+        const procedure = DataManager.getProcedureById(procedureId);
+        if (!procedure) return;
+        
+        this.currentProcedure = procedure;
+        this.closeProceduresDropdown();
+        this.openSchedulingModal();
+        this.updateSelectedProcedureInfo();
+    },
+
+    /**
+     * Atualiza informações do procedimento selecionado
+     */
+    updateSelectedProcedureInfo: function() {
+        const infoDiv = document.getElementById('selectedProcedureInfo');
+        if (!infoDiv || !this.currentProcedure) return;
+        
+        const procedure = this.currentProcedure;
+        infoDiv.innerHTML = `
+            <div class="flex items-center mb-3">
+                <i class="${procedure.icon} text-2xl text-purple-600 mr-3"></i>
+                <div>
+                    <h4 class="font-bold text-lg text-gray-800">${procedure.name}</h4>
+                    <p class="text-gray-600 text-sm">${procedure.description}</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <span class="font-semibold text-gray-700">💰 Preço:</span>
+                    <span class="text-purple-600 font-bold ml-2">${procedure.price}</span>
+                </div>
+                <div>
+                    <span class="font-semibold text-gray-700">⏱️ Duração:</span>
+                    <span class="ml-2">${procedure.duration}</span>
+                </div>
+            </div>
+        `;
+    },
+
+    // ====================================
+    // SISTEMA DE AGENDAMENTO
+    // ====================================
     
-    document.body.appendChild(notification);
+    /**
+     * Abre modal de agendamento
+     */
+    openSchedulingModal: function() {
+        const modal = document.getElementById('schedulingModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('modal-enter');
+            
+            // Se não há procedimento selecionado, mostrar seleção
+            if (!this.currentProcedure) {
+                this.showProcedureSelection();
+            }
+        }
+    },
+
+    /**
+     * Fecha modal de agendamento
+     */
+    closeSchedulingModal: function() {
+        const modal = document.getElementById('schedulingModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            this.clearSchedulingForm();
+        }
+    },
+
+    /**
+     * Mostra seleção de procedimento no modal
+     */
+    showProcedureSelection: function() {
+        const infoDiv = document.getElementById('selectedProcedureInfo');
+        if (!infoDiv) return;
+        
+        let html = `
+            <div class="text-center">
+                <i class="fas fa-spa text-3xl text-purple-600 mb-3"></i>
+                <h4 class="font-bold text-lg text-gray-800 mb-2">Selecione um Procedimento</h4>
+                <p class="text-gray-600 text-sm mb-4">Escolha o procedimento que deseja agendar:</p>
+                <div class="grid grid-cols-1 gap-2 max-h-40 overflow-y-auto">
+        `;
+        
+        DataManager.procedures.slice(0, 6).forEach(procedure => {
+            html += `
+                <button onclick="ClientSystem.selectProcedureForScheduling(${procedure.id})" 
+                        class="text-left p-3 border border-gray-200 rounded-xl hover:bg-purple-50 hover:border-purple-300 transition-all">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="${procedure.icon} text-purple-600 mr-2"></i>
+                            <span class="font-medium">${procedure.name}</span>
+                        </div>
+                        <span class="text-purple-600 font-bold text-sm">${procedure.price}</span>
+                    </div>
+                </button>
+            `;
+        });
+        
+        html += `
+                </div>
+                <button onclick="ClientSystem.toggleProceduresDropdown()" 
+                        class="mt-3 text-purple-600 text-sm hover:underline">
+                    Ver todos os procedimentos
+                </button>
+            </div>
+        `;
+        
+        infoDiv.innerHTML = html;
+    },
+
+    /**
+     * Seleciona procedimento para agendamento
+     */
+    selectProcedureForScheduling: function(procedureId) {
+        const procedure = DataManager.getProcedureById(procedureId);
+        if (procedure) {
+            this.currentProcedure = procedure;
+            this.updateSelectedProcedureInfo();
+        }
+    },
+
+    /**
+     * Valida data selecionada
+     */
+    validateSelectedDate: function(date) {
+        if (!DataManager.validateDate(date)) {
+            this.showNotification('Data inválida! Selecione uma data futura.', 'error');
+            return false;
+        }
+        
+        if (!DataManager.isWorkingDay(date)) {
+            this.showNotification('Não atendemos aos domingos. Selecione outro dia.', 'warning');
+            return false;
+        }
+        
+        // Atualizar horários disponíveis
+        this.updateAvailableTimes(date);
+        return true;
+    },
+
+    /**
+     * Atualiza horários disponíveis para a data
+     */
+    updateAvailableTimes: function(date) {
+        const timeSelect = document.getElementById('appointmentTime');
+        if (!timeSelect) return;
+        
+        const availableTimes = DataManager.getAvailableTimesForDate(date);
+        
+        timeSelect.innerHTML = '<option value="">Selecione um horário</option>';
+        
+        availableTimes.forEach(time => {
+            const option = document.createElement('option');
+            option.value = time;
+            option.textContent = DataManager.formatTime(time);
+            timeSelect.appendChild(option);
+        });
+        
+        if (availableTimes.length === 0) {
+            timeSelect.innerHTML = '<option value="">Nenhum horário disponível</option>';
+            this.showNotification('Não há horários disponíveis para esta data.', 'warning');
+        }
+    },
+
+    /**
+     * Confirma agendamento
+     */
+    confirmScheduling: function() {
+        const formData = this.getSchedulingFormData();
+        
+        if (!this.validateSchedulingForm(formData)) {
+            return;
+        }
+        
+        // Criar agendamento
+        const appointment = {
+            procedure: this.currentProcedure,
+            clientName: formData.clientName,
+            clientPhone: formData.clientPhone,
+            date: formData.date,
+            time: formData.time,
+            notes: formData.notes
+        };
+        
+        // Salvar agendamento
+        const savedAppointment = DataManager.addAppointment(appointment);
+        
+        // Fechar modal de agendamento
+        this.closeSchedulingModal();
+        
+        // Mostrar sucesso
+        this.showSuccessModal(savedAppointment);
+        
+        // Adicionar mensagem no chat
+        this.addBotMessage(`🎉 Agendamento confirmado!\n\n📅 ${DataManager.formatDate(formData.date)} às ${DataManager.formatTime(formData.time)}\n✨ ${this.currentProcedure.name}\n👤 ${formData.clientName}\n\nEm breve entraremos em contato para confirmar!`);
+    },
+
+    /**
+     * Obtém dados do formulário de agendamento
+     */
+    getSchedulingFormData: function() {
+        return {
+            clientName: document.getElementById('clientName')?.value.trim() || '',
+            clientPhone: document.getElementById('clientPhone')?.value.trim() || '',
+            date: document.getElementById('appointmentDate')?.value || '',
+            time: document.getElementById('appointmentTime')?.value || '',
+            notes: document.getElementById('appointmentNotes')?.value.trim() || ''
+        };
+    },
+
+    /**
+     * Valida formulário de agendamento
+     */
+    validateSchedulingForm: function(data) {
+        // Verificar procedimento selecionado
+        if (!this.currentProcedure) {
+            this.showNotification('Selecione um procedimento primeiro!', 'error');
+            return false;
+        }
+        
+        // Verificar campos obrigatórios
+        if (!data.clientName) {
+            this.showNotification('Nome é obrigatório!', 'error');
+            document.getElementById('clientName')?.focus();
+            return false;
+        }
+        
+        if (!data.clientPhone) {
+            this.showNotification('Telefone é obrigatório!', 'error');
+            document.getElementById('clientPhone')?.focus();
+            return false;
+        }
+        
+        if (!DataManager.validatePhone(data.clientPhone)) {
+            this.showNotification('Formato de telefone inválido!', 'error');
+            document.getElementById('clientPhone')?.focus();
+            return false;
+        }
+        
+        if (!data.date) {
+            this.showNotification('Data é obrigatória!', 'error');
+            document.getElementById('appointmentDate')?.focus();
+            return false;
+        }
+        
+        if (!DataManager.validateDate(data.date)) {
+            this.showNotification('Data inválida!', 'error');
+            return false;
+        }
+        
+        if (!data.time) {
+            this.showNotification('Horário é obrigatório!', 'error');
+            document.getElementById('appointmentTime')?.focus();
+            return false;
+        }
+        
+        if (!DataManager.isTimeAvailable(data.date, data.time)) {
+            this.showNotification('Horário não disponível!', 'error');
+            return false;
+        }
+        
+        return true;
+    },
+
+    /**
+     * Limpa formulário de agendamento
+     */
+    clearSchedulingForm: function() {
+        const fields = ['clientName', 'clientPhone', 'appointmentDate', 'appointmentTime', 'appointmentNotes'];
+        fields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) field.value = '';
+        });
+        
+        this.currentProcedure = null;
+    },
+
+    // ====================================
+    // SISTEMA DE MODAIS
+    // ====================================
     
-    // Animar entrada
-    setTimeout(() => {
-        notification.classList.remove('translate-x-full');
-    }, 100);
+    /**
+     * Mostra modal de sucesso
+     */
+    showSuccessModal: function(appointment) {
+        const modal = document.getElementById('successModal');
+        const messageDiv = document.getElementById('successMessage');
+        
+        if (modal && messageDiv) {
+            const procedure = appointment.procedure;
+            const formattedDate = DataManager.formatDate(appointment.date);
+            const formattedTime = DataManager.formatTime(appointment.time);
+            
+            messageDiv.innerHTML = `
+                <h3 class="text-xl font-bold text-gray-800 mb-4">Agendamento Confirmado!</h3>
+                <div class="text-left space-y-2">
+                    <p><strong>Procedimento:</strong> ${procedure.name}</p>
+                    <p><strong>Data:</strong> ${formattedDate}</p>
+                    <p><strong>Horário:</strong> ${formattedTime}</p>
+                    <p><strong>Cliente:</strong> ${appointment.clientName}</p>
+                    <p><strong>Telefone:</strong> ${appointment.clientPhone}</p>
+                </div>
+                <div class="mt-4 p-3 bg-green-50 rounded-xl text-sm text-green-700">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Entraremos em contato em breve para confirmar seu agendamento!
+                </div>
+            `;
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('modal-enter');
+        }
+    },
+
+    /**
+     * Fecha modal de sucesso
+     */
+    closeSuccessModal: function() {
+        const modal = document.getElementById('successModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+        
+        // Mostrar modal de compartilhamento
+        setTimeout(() => {
+            this.openSharingModal();
+        }, 300);
+    },
+
+    /**
+     * Abre modal de compartilhamento
+     */
+    openSharingModal: function() {
+        const modal = document.getElementById('sharingModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            modal.classList.add('modal-enter');
+        }
+    },
+
+    /**
+     * Fecha modal de compartilhamento
+     */
+    closeSharingModal: function() {
+        const modal = document.getElementById('sharingModal');
+        if (modal) {
+            modal.classList.add('hidden');
+        }
+    },
+
+    /**
+     * Fecha todos os modais
+     */
+    closeAllModals: function() {
+        const modals = ['schedulingModal', 'successModal', 'sharingModal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    },
+
+    // ====================================
+    // SISTEMA DE COMPARTILHAMENTO
+    // ====================================
     
-    // Remover após 5 segundos
-    setTimeout(() => {
-        notification.classList.add('translate-x-full');
+    /**
+     * Compartilha no WhatsApp do cliente
+     */
+    shareToClientWhatsApp: function() {
+        const lastAppointment = DataManager.appointments[DataManager.appointments.length - 1];
+        if (!lastAppointment) return;
+        
+        const message = this.generateAppointmentMessage(lastAppointment);
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        
+        window.open(whatsappUrl, '_blank');
+        this.closeSharingModal();
+    },
+
+    /**
+     * Copia dados do agendamento
+     */
+    copyAppointmentData: function() {
+        const lastAppointment = DataManager.appointments[DataManager.appointments.length - 1];
+        if (!lastAppointment) return;
+        
+        const message = this.generateAppointmentMessage(lastAppointment);
+        
+        navigator.clipboard.writeText(message).then(() => {
+            this.showNotification('Dados copiados com sucesso!', 'success');
+            this.closeSharingModal();
+        }).catch(() => {
+            this.showNotification('Erro ao copiar dados.', 'error');
+        });
+    },
+
+    /**
+     * Baixa comprovante em PDF (simulado)
+     */
+    downloadAppointmentPDF: function() {
+        const lastAppointment = DataManager.appointments[DataManager.appointments.length - 1];
+        if (!lastAppointment) return;
+        
+        // Simular download de PDF
+        const content = this.generateAppointmentMessage(lastAppointment);
+        const blob = new Blob([content], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `agendamento-${lastAppointment.id}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        this.showNotification('Comprovante baixado!', 'success');
+        this.closeSharingModal();
+    },
+
+    /**
+     * Compartilha nas redes sociais
+     */
+    shareToSocialMedia: function() {
+        const message = "Acabei de agendar meu procedimento na Clínica Bella Estética! 💆‍♀️✨";
+        const url = DataManager.clinicData.website;
+        
+        // Simular compartilhamento
+        if (navigator.share) {
+            navigator.share({
+                title: 'Clínica Bella Estética',
+                text: message,
+                url: url
+            });
+        } else {
+            // Fallback para redes sociais
+            const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(message)}`;
+            window.open(shareUrl, '_blank');
+        }
+        
+        this.closeSharingModal();
+    },
+
+    /**
+     * Gera mensagem do agendamento
+     */
+    generateAppointmentMessage: function(appointment) {
+        const clinic = DataManager.clinicData;
+        const procedure = appointment.procedure;
+        const formattedDate = DataManager.formatDate(appointment.date);
+        const formattedTime = DataManager.formatTime(appointment.time);
+        
+        return `🏥 ${clinic.name}
+📅 AGENDAMENTO CONFIRMADO
+
+✨ Procedimento: ${procedure.name}
+📅 Data: ${formattedDate}
+🕐 Horário: ${formattedTime}
+👤 Cliente: ${appointment.clientName}
+📱 Telefone: ${appointment.clientPhone}
+💰 Valor: ${procedure.price}
+
+📍 Endereço: ${clinic.address}, ${clinic.city}
+📞 Contato: ${clinic.phone}
+
+Obrigado por escolher a ${clinic.name}! 💜`;
+    },
+
+    // ====================================
+    // SISTEMA DE DROPDOWN
+    // ====================================
+    
+    /**
+     * Alterna dropdown de procedimentos
+     */
+    toggleProceduresDropdown: function() {
+        const dropdown = document.getElementById('proceduresDropdown');
+        const icon = document.getElementById('dropdownIcon');
+        
+        if (dropdown && icon) {
+            if (dropdown.classList.contains('hidden')) {
+                dropdown.classList.remove('hidden');
+                dropdown.classList.add('dropdown-enter');
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                this.closeProceduresDropdown();
+            }
+        }
+    },
+
+    /**
+     * Fecha dropdown de procedimentos
+     */
+    closeProceduresDropdown: function() {
+        const dropdown = document.getElementById('proceduresDropdown');
+        const icon = document.getElementById('dropdownIcon');
+        
+        if (dropdown && icon) {
+            dropdown.classList.add('hidden');
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+        }
+    },
+
+    // ====================================
+    // UTILITÁRIOS
+    // ====================================
+    
+    /**
+     * Verifica se texto contém alguma das palavras
+     */
+    containsAny: function(text, words) {
+        return words.some(word => text.includes(word));
+    },
+
+    /**
+     * Escapa HTML para segurança
+     */
+    escapeHtml: function(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    },
+
+    /**
+     * Formata mensagem do bot (permite markdown básico)
+     */
+    formatBotMessage: function(message) {
+        return message
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+            .replace(/\n/g, '<br>');
+    },
+
+    /**
+     * Obtém horário atual formatado
+     */
+    getCurrentTime: function() {
+        return new Date().toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    },
+
+    /**
+     * Rola chat para o final
+     */
+    scrollToBottom: function() {
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            setTimeout(() => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 100);
+        }
+    },
+
+    /**
+     * Mostra notificação
+     */
+    showNotification: function(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-xl shadow-lg max-w-sm notification ${type === 'error' ? 'bg-red-600' : type === 'warning' ? 'bg-yellow-600' : type === 'success' ? 'bg-green-600' : 'bg-blue-600'} text-white`;
+        
+        const icon = type === 'error' ? 'fa-exclamation-triangle' : 
+                    type === 'warning' ? 'fa-exclamation-circle' :
+                    type === 'success' ? 'fa-check-circle' : 'fa-info-circle';
+        
+        notification.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${icon} mr-2"></i>
+                <span>${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
         setTimeout(() => {
             if (notification.parentNode) {
                 notification.parentNode.removeChild(notification);
             }
-        }, 300);
-    }, 5000);
-}
-
-function closeAllModals() {
-    const modals = ['schedulingModal', 'successModal', 'sharingModal'];
-    modals.forEach(modalId => {
-        const modal = document.getElementById(modalId);
-        if (modal && !modal.classList.contains('hidden')) {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-    });
-}
+        }, 5000);
+    }
+};
 
 // ====================================
-// EVENTOS GLOBAIS
+// FUNÇÕES GLOBAIS PARA HTML
 // ====================================
-window.sendMessage = sendMessage;
-window.sendQuickMessage = sendQuickMessage;
-window.toggleProceduresDropdown = toggleProceduresDropdown;
-window.showProcedureDetails = showProcedureDetails;
-window.openSchedulingModal = openSchedulingModal;
-window.closeSchedulingModal = closeSchedulingModal;
-window.confirmScheduling = confirmScheduling;
-window.closeSuccessModal = closeSuccessModal;
-window.showSharingModal = showSharingModal;
-window.closeSharingModal = closeSharingModal;
-window.shareToClientWhatsApp = shareToClientWhatsApp;
-window.copyAppointmentData = copyAppointmentData;
-window.downloadAppointmentPDF = downloadAppointmentPDF;
-window.shareToSocialMedia = shareToSocialMedia;
 
-console.log('✅ Sistema de chat do cliente carregado com sucesso!');
+// Funções chamadas diretamente pelo HTML
+window.validateAccess = function() {
+    // Implementada no index.html
+};
+
+window.sendMessage = function() {
+    ClientSystem.sendMessage();
+};
+
+window.sendQuickMessage = function(message) {
+    ClientSystem.sendQuickMessage(message);
+};
+
+window.toggleProceduresDropdown = function() {
+    ClientSystem.toggleProceduresDropdown();
+};
+
+window.openSchedulingModal = function() {
+    ClientSystem.openSchedulingModal();
+};
+
+window.closeSchedulingModal = function() {
+    ClientSystem.closeSchedulingModal();
+};
+
+window.confirmScheduling = function() {
+    ClientSystem.confirmScheduling();
+};
+
+window.closeSuccessModal = function() {
+    ClientSystem.closeSuccessModal();
+};
+
+window.shareToClientWhatsApp = function() {
+    ClientSystem.shareToClientWhatsApp();
+};
+
+window.copyAppointmentData = function() {
+    ClientSystem.copyAppointmentData();
+};
+
+window.downloadAppointmentPDF = function() {
+    ClientSystem.downloadAppointmentPDF();
+};
+
+window.shareToSocialMedia = function() {
+    ClientSystem.shareToSocialMedia();
+};
+
+window.closeSharingModal = function() {
+    ClientSystem.closeSharingModal();
+};
+
+// ====================================
+// INICIALIZAÇÃO GLOBAL
+// ====================================
+
+/**
+ * Inicializa o chat (chamada do sistema de proteção)
+ */
+window.initializeChat = function() {
+    ClientSystem.init();
+};
+
+// ====================================
+// INICIALIZAÇÃO AUTOMÁTICA
+// ====================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Aguardar DataManager estar pronto
+    if (typeof DataManager !== 'undefined') {
+        console.log('🚀 ClientSystem pronto para inicialização!');
+    } else {
+        console.warn('⚠️ DataManager não encontrado!');
+    }
+});
+
+// ====================================
+// LOG DE CARREGAMENTO
+// ====================================
+console.log('🔧 client.js carregado com sucesso!');
+console.log('🎯 ClientSystem disponível globalmente');
+console.log('✅ Sistema completo da Clínica Bella Estética pronto!');
