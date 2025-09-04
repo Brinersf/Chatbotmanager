@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatBot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .chat-message {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-br from-pink-50 to-purple-50 min-h-screen flex items-center justify-center">
+
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden max-w-md mx-auto w-full">
+        <div id="chatHeader" class="bg-gradient-to-r from-pink-500 to-purple-600 p-4 text-white">
+            <div class="flex items-center space-x-3">
+                <div id="chatIcon" class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <h3 id="chatTitle" class="font-semibold">ChatBot</h3>
+                    <p class="text-sm opacity-90">Assistente Virtual</p>
+                </div>
+            </div>
+        </div>
+        <div id="chatMessages" class="h-96 overflow-y-auto p-4 space-y-4 bg-gray-50">
+            </div>
+        <div class="p-4 border-t bg-white">
+            <div class="flex space-x-2">
+                <input type="text" id="chatInput" placeholder="Digite sua mensagem..." class="flex-1 border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:border-pink-500" onkeypress="if(event.key==='Enter') sendMessage()">
+                <button onclick="sendMessage()" class="bg-pink-500 text-white px-4 py-2 rounded-lg hover:bg-pink-600 transition-colors">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import {
+            initializeApp
+        } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
+        import {
+            getFirestore,
+            doc,
+            getDoc,
+            onSnapshot,
+            collection
+        } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
+        import {
+            getAnalytics
+        } from "https://www.gstatic.com/firebasejs/12.2.1/firebase-analytics.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAeXkkHmkYtZW1rJc926TAUyDtUobyaum4",
+            authDomain: "chatbot-estetica.firebaseapp.com",
+            projectId: "chatbot-estetica",
+            storageBucket: "chatbot-estetica.firebasestorage.app",
+            messagingSenderId: "594705470724",
+            appId: "1:594705470724:web:5a38fd45562fb29e28ec51",
+            measurementId: "G-L5DKNK6RQB"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const analytics = getAnalytics(app);
+
+        // --- ChatBot Functionality ---
+        let chatHistory = [];
+        let schedulingData = {
+            procedure: '',
+            price: 0,
+            date: '',
+            time: '',
+            clientName: '',
+            clientPhone: ''
+        };
+        let currentQuestion = 'initial';
+        let procedures = {}; // Will be populated from Firestore
+        let clinicConfig = {}; // Will be populated from Firestore
+
+        // Function to start a conversation with the bot
+        function startChat() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '';
+            addMessage(clinicConfig.welcomeMessage || 'Olá! Como posso ajudar?', 'bot');
+            addOptions(getInitialOptions());
+            currentQuestion = 'initial';
+        }
+
+        function getInitialOptions() {
+            return [{
+                text: '🌟 Ver procedimentos disponíveis',
+                value: 'Quero conhecer os procedimentos'
+            }, {
+                text: '📅 Agendar consulta',
+                value: 'Quero agendar uma consulta'
+            }, {
+                text: '💰 Informações sobre preços',
+                value: 'Tenho dúvidas sobre preços'
+            }, {
+                text: '📍 Localização e contato',
+                value: 'Onde vocês ficam localizados?'
+            }];
+        }
+
+        async function sendMessage(message = null) {
+            const chatInput = document.getElementById('chatInput');
+            const userMessage = message || chatInput.value.trim();
+            if (userMessage === '') return;
+
+            addMessage(userMessage, 'user');
+            chatInput.value = '';
+
+            setTimeout(async () => {
+                await botResponse(userMessage);
+            }, 500);
+        }
+
+        function addMessage(text, sender) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `chat-message ${sender === 'user' ? 'flex justify-end' : 'flex items-start space-x-2'}`;
+            if (sender === 'user') {
+                messageDiv.innerHTML = `<div class="bg-blue-500 text-white rounded-lg p-3 shadow-sm max-w-xs">${text}</div>`;
+            } else {
+                const icon = document.getElementById('chatIcon').cloneNode(true);
+                icon.classList.remove('w-10', 'h-10');
+                icon.classList.add('w-8', 'h-8');
+                messageDiv.innerHTML = `
+                    <div class="flex items-start space-x-2">
+                        ${icon.outerHTML}
+                        <div class="bg-white rounded-lg p-3 shadow-sm max-w-xs">
+                            <p class="text-sm text-gray-800">${text}</p>
+                        </div>
+                    </div>
+                `;
+            }
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        async function botResponse(userMessage) {
+            const lowerCaseMsg = userMessage.toLowerCase();
+            let response = 'Desculpe, não entendi. Por favor, escolha uma das opções ou digite sua pergunta.';
+            let options = null;
+
+            if (currentQuestion === 'initial') {
+                if (lowerCaseMsg.includes('procedimentos')) {
+                    const procedureNames = Object.values(procedures).map(p => p.name).join(', ');
+                    response = `Temos os seguintes procedimentos disponíveis: ${procedureNames}. Qual deles te interessa?`;
+                    options = Object.values(procedures).map(p => ({
+                        text: p.name,
+                        value: p.name
+                    }));
+                    currentQuestion = 'procedure_selection';
+                } else if (lowerCaseMsg.includes('agendar') || lowerCaseMsg.includes('consulta')) {
+                    response = 'Ótimo! Para agendar, por favor, me diga qual procedimento você deseja fazer.';
+                    currentQuestion = 'ask_procedure';
+                } else if (lowerCaseMsg.includes('preços')) {
+                    response = 'Para informações sobre preços, me diga qual procedimento você tem interesse.';
+                    currentQuestion = 'ask_procedure';
+                } else if (lowerCaseMsg.includes('localização') || lowerCaseMsg.includes('contato')) {
+                    response = `Estamos localizados em ${clinicConfig.address || 'Rua das Flores, 123 - Centro'}. Você pode nos ligar no ${clinicConfig.phone || '(11) 99999-8888'}.`;
+                    currentQuestion = 'initial';
+                } else {
+                    addMessage(response, 'bot');
+                    addOptions(getInitialOptions());
+                    return;
+                }
+            } else if (currentQuestion === 'ask_procedure' || currentQuestion === 'procedure_selection') {
+                const procedure = Object.values(procedures).find(p => lowerCaseMsg.includes(p.name.toLowerCase()));
+                if (procedure) {
+                    schedulingData.procedure = procedure.name;
+                    schedulingData.price = procedure.price;
+                    response = `O procedimento ${procedure.name} custa R$ ${procedure.price}. Gostaria de agendar?`;
+                    options = [{
+                        text: 'Sim, quero agendar',
+                        value: 'sim, agendar'
+                    }, {
+                        text: 'Não, obrigado',
+                        value: 'não'
+                    }];
+                    currentQuestion = 'confirm_scheduling';
+                } else {
+                    response = 'Desculpe, não encontrei esse procedimento. Por favor, digite o nome completo ou escolha uma opção.';
+                    addMessage(response, 'bot');
+                    return;
+                }
+            } else if (currentQuestion === 'confirm_scheduling') {
+                if (lowerCaseMsg.includes('sim')) {
+                    response = `Certo. Por favor, me diga o dia que você gostaria de agendar (Ex: 15/01/2024).`;
+                    currentQuestion = 'ask_date';
+                } else {
+                    response = 'Tudo bem. Se precisar de algo, é só me chamar!';
+                    currentQuestion = 'initial';
+                    setTimeout(() => startChat(), 2000);
+                }
+            } else if (currentQuestion === 'ask_date') {
+                const dateRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+                if (dateRegex.test(userMessage)) {
+                    schedulingData.date = userMessage;
+                    response = `Perfeito. E qual horário? (Ex: 14:30)`;
+                    currentQuestion = 'ask_time';
+                } else {
+                    response = 'Formato de data inválido. Por favor, use o formato DD/MM/AAAA.';
+                }
+            } else if (currentQuestion === 'ask_time') {
+                const timeRegex = /^\d{2}:\d{2}$/;
+                if (timeRegex.test(userMessage)) {
+                    schedulingData.time = userMessage;
+                    response = `Ótimo! Agora, por favor, me diga seu nome completo.`;
+                    currentQuestion = 'ask_name';
+                } else {
+                    response = 'Formato de horário inválido. Por favor, use o formato HH:mm.';
+                }
+            } else if (currentQuestion === 'ask_name') {
+                schedulingData.clientName = userMessage;
+                response = `E, por último, seu número de telefone com DDD, por favor. (Ex: 11999998888)`;
+                currentQuestion = 'ask_phone';
+            } else if (currentQuestion === 'ask_phone') {
+                const phoneRegex = /^\d{11}$/;
+                const formattedPhone = userMessage.replace(/\D/g, '');
+                if (phoneRegex.test(formattedPhone)) {
+                    schedulingData.clientPhone = formattedPhone;
+                    response = `Pronto! Seu agendamento para **${schedulingData.procedure}** foi solicitado para o dia **${schedulingData.date}** às **${schedulingData.time}**. Em breve, nossa equipe entrará em contato para confirmar.`;
+                    currentQuestion = 'finished';
+                    // Here you would save the scheduling data to Firestore
+                    // await setDoc(doc(db, "appointments", schedulingData.clientPhone), schedulingData);
+                    setTimeout(() => startChat(), 5000);
+                } else {
+                    response = 'Número de telefone inválido. Por favor, digite apenas os 11 dígitos com DDD.';
+                }
+            } else if (currentQuestion === 'finished') {
+                response = 'Agendamento concluído. Se precisar de algo mais, é só me chamar!';
+                currentQuestion = 'initial';
+                setTimeout(() => startChat(), 2000);
+            }
+
+            // Display response and options
+            addMessage(response, 'bot');
+            if (options) {
+                setTimeout(() => {
+                    addOptions(options);
+                }, 1000);
+            }
+        }
+
+        function addOptions(options) {
+            const chatMessages = document.getElementById('chatMessages');
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'flex items-start space-x-2 chat-message';
+            optionsDiv.innerHTML = `
+                <div class="w-8 h-8 bg-pink-500 rounded-full flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-robot text-white text-xs"></i>
+                </div>
+                <div class="bg-white rounded-lg p-3 shadow-sm max-w-xs">
+                    <div class="mt-3 space-y-2">
+                        ${options.map(option => `<button onclick="sendMessage('${option.value}')" class="w-full text-left text-sm bg-gray-50 hover:bg-gray-100 text-gray-700 px-3 py-2 rounded-lg transition-colors">${option.text}</button>`).join('')}
+                    </div>
+                </div>
+            `;
+            chatMessages.appendChild(optionsDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        // --- Firestore Listener ---
+        const clinicRef = doc(db, "chatbotConfig", "config");
+        const proceduresRef = collection(db, "procedures");
+
+        onSnapshot(clinicRef, (docSnap) => {
+            if (docSnap.exists()) {
+                clinicConfig = docSnap.data();
+                console.log("Configuração do chatbot atualizada do Firestore:", clinicConfig);
+                updateChatBotUI();
+                if (currentQuestion === 'initial' || currentQuestion === 'finished') {
+                    startChat();
+                }
+            } else {
+                console.log("Documento de configuração não encontrado!");
+            }
+        });
+
+        onSnapshot(proceduresRef, (querySnapshot) => {
+            procedures = {};
+            querySnapshot.forEach((doc) => {
+                procedures[doc.id] = doc.data();
+            });
+            console.log("Procedimentos atualizados do Firestore:", procedures);
+        });
+
+        function updateChatBotUI() {
+            document.getElementById('chatTitle').textContent = clinicConfig.clinicName || 'ChatBot';
+            document.getElementById('chatIcon').innerHTML = `<i class="${clinicConfig.icon || 'fas fa-robot'}"></i>`;
+            document.getElementById('chatHeader').className = `bg-gradient-to-r ${clinicConfig.color || 'from-pink-500 to-purple-600'} p-4 text-white`;
+        }
+
+        // Expose functions to the global scope
+        window.sendMessage = sendMessage;
+        window.addMessage = addMessage;
+    </script>
+</body>
+
+</html>
